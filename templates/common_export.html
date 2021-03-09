@@ -1,0 +1,507 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>科研信息采集与管理系统</title>
+    <!-- Fav  Icon Link -->
+    <link rel="shortcut icon" type="image/png" href="images/fav.png">
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <!-- themify icons CSS -->
+    <link rel="stylesheet" href="css/themify-icons.css">
+    <!-- Animations CSS -->
+    <link rel="stylesheet" href="css/animate.css">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/green.css" id="style_theme">
+    <link rel="stylesheet" href="css/responsive.css">
+    <!-- morris charts -->
+    <link rel="stylesheet" href="charts/css/morris.css">
+    <!-- jvectormap -->
+    <link rel="stylesheet" href="css/jquery-jvectormap.css">
+    <link rel="stylesheet" href="datatable/dataTables.bootstrap4.min.css">
+
+    <script src="js/modernizr.min.js"></script>
+</head>
+
+<body>
+    <!-- Pre Loader -->
+    <div class="loading">
+        <div class="spinner">
+            <div class="double-bounce1"></div>
+            <div class="double-bounce2"></div>
+        </div>
+    </div>
+    <!--/Pre Loader -->
+    <!-- Color Changer -->
+    <div class="theme-settings" id="switcher">
+        <span class="theme-click">
+			<span class="ti-settings"></span>
+        </span>
+        <span class="theme-color theme-default theme-active" data-color="green"></span>
+        <span class="theme-color theme-blue" data-color="blue"></span>
+        <span class="theme-color theme-red" data-color="red"></span>
+        <span class="theme-color theme-violet" data-color="violet"></span>
+        <span class="theme-color theme-yellow" data-color="yellow"></span>
+    </div>
+    <!-- /Color Changer -->
+    <div class="wrapper">
+        <!-- Page Content -->
+        <div id="content">
+
+            <!-- Top Navigation -->
+            <div class="container top-brand">
+                <nav class="navbar navbar-default">
+                    <div class="navbar-header">
+                        <div class="sidebar-header">
+                            <a href="index.html"><img src="images/logo-dark.png" class="logo" alt="logo"></a>
+                        </div>
+                    </div>
+                    <ul class="nav justify-content-end">
+                        <li class="nav-item">
+                            <a class="nav-link">
+                                <span title="全屏" class="ti-fullscreen fullscreen"></span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                                <span class="ti-user"></span>
+                            </a>
+                            <div class="dropdown-menu lochana-box-shadow2 profile animated flipInY">
+                                <h5>John Willing</h5>
+                                <a class="dropdown-item" href="#">
+                                    <span class="ti-power-off"></span> 退出</a>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <!-- /Top Navigation -->
+
+            <!-- Menu -->
+            <div class="container menu-nav">
+                <nav class="navbar navbar-expand-lg lochana-bg text-white">
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+						<span class="ti-menu text-white"></span>
+					</button>
+
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav mr-auto">
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-home"></span> 查看科研信息</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="index.html">查看统计信息</a>
+                                    <a class="dropdown-item" href="patients.html">查看详细信息</a>
+                                </div>
+                            </li>
+                            <li class="nav-item dropdown  active">
+                                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-pencil-alt"></span> 更新科研信息</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="404.html">自动更新信息</a>
+                                    <a class="dropdown-item" href="patients_1.html">手动更新信息</a>
+                                </div>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-file"></span> 导出科研信息</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="add-doctor.html">导出通用格式信息</a>
+                                    <a class="dropdown-item" href="doctors.html">导出定制格式信息</a>
+                                </div>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-user"></span> 管理个人信息</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="add-appointment.html">修改个人信息</a>
+                                    <a class="dropdown-item" href="appointments.html">修改密码</a>
+                                </div>
+                            </li>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+            <!-- /Menu -->
+
+            <!-- Breadcrumb -->
+            <!-- Page Title -->
+            <div class="container mt-0">
+                <div class="row breadcrumb-bar">
+                    <div class="col-md-6">
+                        <h3 class="block-title">详细信息</h3>
+                    </div>
+                    <div class="col-md-6">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="index.html">
+                                    <span class="ti-home"></span>
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item">更新科研信息</li>
+                            <li class="breadcrumb-item active">手动更新信息</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            <!-- /Page Title -->
+
+            <!-- /Breadcrumb -->
+            <!-- Main Content -->
+            <div class="container">
+
+                <div class="row">
+                    <!-- Widget Item -->
+                    <div class="col-md-12">
+                        <div class="widget-area-2 lochana-box-shadow">
+                            <!-- <h3 class="widget-title">筛选条件</h3> -->
+
+                            <div class="row">
+                                <div class="col-md-2">
+                                    <strong>信息类型</strong>
+                                    <select class="form-control" style="padding: 0 2%;">
+                                        <option>专利</option>
+                                        <option>论文</option>
+                                        <option>项目</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <strong>状态</strong>
+                                    <select class="form-control" style="padding: 0 2%;">
+                                        <option>全部</option>
+                                        <option>已受理</option>
+                                        <option>评审中</option>
+                                        <option>已授权</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-3">
+                                    <strong>起止日期</strong>
+                                    <input type="date" value="2018-11-04" class="form-control" id="start_date">
+                                </div>
+                                <strong style="line-height: 80px;">--</strong>
+                                <div class="col-md-3">
+                                    <br>
+                                    <input type="date" value="2018-11-12" class="form-control" id="end_date">
+                                </div>
+
+                            </div><br>
+
+                            <div class="table-responsive mb-3">
+                                <table id="tableId" class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th class="no-sort">
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="select-all">
+                                                    <label class="custom-control-label" for="select-all"></label>
+                                                </div>
+                                            </th>
+                                            <th>专利编号</th>
+                                            <th>专利名称</th>
+                                            <th>专利类型</th>
+                                            <th>专利申请人</th>
+                                            <th>申请时间</th>
+                                            <th>专利状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="1">
+                                                    <label class="custom-control-label" for="1"></label>
+                                                </div>
+                                            </td>
+                                            <td>1</td>
+                                            <td>xxx专利</td>
+                                            <td>实用型</td>
+                                            <td>西北大学</td>
+                                            <td>12-03-2018</td>
+                                            <td>
+                                                <span class="badge badge-success">已授权</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="4">
+                                                    <label class="custom-control-label" for="4"></label>
+                                                </div>
+                                            </td>
+                                            <td>4</td>
+                                            <td>xxx项目</td>
+                                            <td>实用型</td>
+                                            <td></td>
+                                            <td>12-03-2018</td>
+                                            <td>
+                                                <span class="badge badge-success">已授权</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="5">
+                                                    <label class="custom-control-label" for="5"></label>
+                                                </div>
+                                            </td>
+                                            <td>5</td>
+                                            <td>xxx专利</td>
+                                            <td></td>
+                                            <td>西北大学</td>
+                                            <td>12-10-2018</td>
+                                            <td>
+                                                <span class="badge badge-warning">审核中</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="6">
+                                                    <label class="custom-control-label" for="6"></label>
+                                                </div>
+                                            </td>
+                                            <td>6</td>
+                                            <td>xxx专利</td>
+                                            <td>实用型</td>
+                                            <td>西北大学</td>
+                                            <td>25-10-2018</td>
+                                            <td>
+                                                <span class="badge badge-danger"> 已受理</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="7">
+                                                    <label class="custom-control-label" for="7"></label>
+                                                </div>
+                                            </td>
+                                            <td>7</td>
+                                            <td>xxxx专利</td>
+                                            <td>发明型</td>
+                                            <td>西北大学</td>
+                                            <td>12-03-2018</td>
+                                            <td>
+                                                <span class="badge badge-success">已授权</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="8">
+                                                    <label class="custom-control-label" for="8"></label>
+                                                </div>
+                                            </td>
+                                            <td>8</td>
+                                            <td>Riya </td>
+                                            <td>26</td>
+                                            <td>3423-232-987</td>
+                                            <td>12-10-2018</td>
+                                            <td>
+                                                <span class="badge badge-warning">Pending</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="9">
+                                                    <label class="custom-control-label" for="9"></label>
+                                                </div>
+                                            </td>
+                                            <td>9</td>
+                                            <td>Paul</td>
+                                            <td>46</td>
+                                            <td>3423-132-987</td>
+                                            <td>45-10-2018</td>
+                                            <td>
+                                                <span class="badge badge-danger">Cancelled</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="10">
+                                                    <label class="custom-control-label" for="10"></label>
+                                                </div>
+                                            </td>
+                                            <td>10</td>
+                                            <td>Manoj Kumar</td>
+                                            <td>30</td>
+                                            <td>333-444-7777</td>
+                                            <td>12-03-2018</td>
+                                            <td>
+                                                <span class="badge badge-success">Completed</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="11">
+                                                    <label class="custom-control-label" for="11"></label>
+                                                </div>
+                                            </td>
+                                            <td>11</td>
+                                            <td>Riya </td>
+                                            <td>26</td>
+                                            <td>3423-232-987</td>
+                                            <td>12-10-2018</td>
+                                            <td>
+                                                <span class="badge badge-warning">Pending</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="12">
+                                                    <label class="custom-control-label" for="12"></label>
+                                                </div>
+                                            </td>
+                                            <td>12</td>
+                                            <td>Paul</td>
+                                            <td>46</td>
+                                            <td>3423-132-987</td>
+                                            <td>45-10-2018</td>
+                                            <td>
+                                                <span class="badge badge-danger">Cancelled</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <table id="tableId1" class="table table-bordered table-striped" style="display: none;">
+                                    <thead>
+                                        <tr>
+                                            <th class="no-sort">
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="select-all">
+                                                    <label class="custom-control-label" for="select-all"></label>
+                                                </div>
+                                            </th>
+                                            <th>论文编号</th>
+                                            <th>论文名称</th>
+                                            <th>论文来源</th>
+                                            <th>发表日期</th>
+                                            <th>关键字</th>
+                                            <th>被引量</th>
+                                            <th>影响因子</th>
+                                            <th>检索类型</th>
+                                            <th>刊登信息</th>
+                                            <th>DOI号</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="1">
+                                                    <label class="custom-control-label" for="1"></label>
+                                                </div>
+                                            </td>
+                                            <td>1</td>
+                                            <td>xxx专利</td>
+                                            <td>实用型</td>
+                                            <td>西北大学</td>
+                                            <td>加密</td>
+                                            <td>
+                                                <span class="badge badge-success">已授权</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <table id="tableId2" class="table table-bordered table-striped" style="display: none;">
+                                    <thead>
+                                        <tr>
+                                            <th class="no-sort">
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="select-all">
+                                                    <label class="custom-control-label" for="select-all"></label>
+                                                </div>
+                                            </th>
+                                            <th>项目编号</th>
+                                            <th>项目名称</th>
+                                            <th>项目类型</th>
+                                            <th>项目负责人</th>
+                                            <th>立项时间</th>
+                                            <th>项目状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="1">
+                                                    <label class="custom-control-label" for="1"></label>
+                                                </div>
+                                            </td>
+                                            <td>1</td>
+                                            <td>xxx专利</td>
+                                            <td>实用型</td>
+                                            <td>西北大学</td>
+                                            <td>12-03-2018</td>
+                                            <td>
+                                                <span class="badge badge-success">已授权</span>
+                                            </td>
+                                        </tr>
+
+                                    </tbody>
+                                </table>
+
+                                <!--Export links-->
+                                <nav aria-label="Page navigation example">
+                                    <ul class="pagination justify-content-center export-pagination">
+                                        <li class="page-item">
+                                            <a class="page-link" href="#"><span class="ti-align-justify"></span>导出选中数据</a>
+                                        </li>
+                                        <li class="page-item">
+                                            <a class="page-link" href="#"><span class="ti-align-justify"></span>导出所有数据</a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                                <!-- /Export links-->
+                                <!-- <button type="button" class="btn btn-primary mt-3 mb-0"><a href="modify_paper.html"><span class="ti-pencil-alt"></span> 编辑</a></button>
+                                <button type="button" class="btn btn-primary mt-3 mb-0" style="background: rgb(206, 128, 26);"> <a href="add_paper.html"><span class="ti-plus"></span> 新增</a></button> -->
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Widget Item -->
+                </div>
+            </div>
+            <!-- /Main Content -->
+
+
+
+            <!-- Copy Rights-->
+            <div class="container">
+                <div class="d-sm-flex justify-content-center">
+                    <span class="text-muted text-center d-block d-sm-inline-block">Copyright © 2018 <a href="#" target="_blank">konnectcode</a>. All rights reserved.</span>
+                </div>
+            </div>
+            <!-- /Copy Rights -->
+        </div>
+        <!-- /Page Content -->
+    </div>
+    <!-- Back to Top -->
+    <a id="back-to-top" href="#" class="back-to-top">
+        <span class="ti-angle-up"></span>
+    </a>
+    <!-- /Back to Top -->
+    <!-- Jquery Library-->
+    <script src="js/jquery-3.2.1.min.js"></script>
+    <!-- Popper Library-->
+    <script src="js/popper.min.js"></script>
+    <!-- Bootstrap Library-->
+    <script src="js/bootstrap.min.js"></script>
+
+    <!-- Datatable  -->
+    <script src="datatable/jquery.dataTables.min.js"></script>
+    <script src="datatable/dataTables.bootstrap4.min.js"></script>
+
+    <!-- Custom Script-->
+    <script src="js/custom.js"></script>
+    <script src="js/custom-datatables.js"></script>
+</body>
+
+</html>

@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="0186c63b-ad31-4812-811f-b35f308d4e30" name="Default Changelist" comment="" />
+    <list default="true" id="0186c63b-ad31-4812-811f-b35f308d4e30" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/static/js/monitor.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/js/custom-datatables.js" beforeDir="false" afterPath="$PROJECT_DIR$/static/js/custom-datatables.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/details_1.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/details_1.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -26,6 +33,7 @@
       <list>
         <option value="Flask Main" />
         <option value="Python Script" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
@@ -133,7 +141,10 @@
       <workItem from="1615183833871" duration="17482000" />
       <workItem from="1615205850817" duration="1196000" />
       <workItem from="1615216171057" duration="1237000" />
-      <workItem from="1615266635281" duration="873000" />
+      <workItem from="1615266635281" duration="1377000" />
+      <workItem from="1615270943282" duration="24780000" />
+      <workItem from="1615360337198" duration="6490000" />
+      <workItem from="1615373266884" duration="8591000" />
     </task>
     <servers />
   </component>
@@ -145,22 +156,22 @@
       <screen x="0" y="0" width="1536" height="824" />
     </state>
     <state x="165" y="175" key="FileChooserDialogImpl/0.0.1536.824@0.0.1536.824" timestamp="1615189091554" />
-    <state width="723" height="199" key="GridCell.Tab.0.bottom" timestamp="1615270387498">
+    <state width="1493" height="162" key="GridCell.Tab.0.bottom" timestamp="1615382059909">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="723" height="199" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1615270387498" />
-    <state width="723" height="199" key="GridCell.Tab.0.center" timestamp="1615270387498">
+    <state width="1493" height="162" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1615382059909" />
+    <state width="1493" height="162" key="GridCell.Tab.0.center" timestamp="1615382059909">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="723" height="199" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1615270387498" />
-    <state width="723" height="199" key="GridCell.Tab.0.left" timestamp="1615270387497">
+    <state width="1493" height="162" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1615382059909" />
+    <state width="1493" height="162" key="GridCell.Tab.0.left" timestamp="1615382059909">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="723" height="199" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1615270387497" />
-    <state width="723" height="199" key="GridCell.Tab.0.right" timestamp="1615270387498">
+    <state width="1493" height="162" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1615382059909" />
+    <state width="1493" height="162" key="GridCell.Tab.0.right" timestamp="1615382059909">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
-    <state width="723" height="199" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1615270387498" />
+    <state width="1493" height="162" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1615382059909" />
     <state x="0" y="57" key="SettingsEditor" timestamp="1614669732176">
       <screen x="0" y="0" width="1536" height="824" />
     </state>
@@ -172,7 +183,7 @@
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/graduation$graduation.coverage" NAME="graduation Coverage Results" MODIFIED="1614168547764" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
-    <SUITE FILE_PATH="coverage/graduation$utils.coverage" NAME="utils Coverage Results" MODIFIED="1614931391187" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/graduation$Flask__app_py_.coverage" NAME="Flask (app.py) Coverage Results" MODIFIED="1615270387474" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
+    <SUITE FILE_PATH="coverage/graduation$utils.coverage" NAME="utils Coverage Results" MODIFIED="1615381283340" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/graduation$Flask__app_py_.coverage" NAME="Flask (app.py) Coverage Results" MODIFIED="1615381539257" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="" />
   </component>
 </project>

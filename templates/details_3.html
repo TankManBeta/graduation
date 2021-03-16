@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 
 <head>
@@ -90,14 +90,14 @@
 
                     <div class="collapse navbar-collapse" id="navbarSupportedContent">
                         <ul class="navbar-nav mr-auto">
-                            <li class="nav-item dropdown active">
+                            <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-home"></span> 查看科研信息</a>
                                 <div class="dropdown-menu">
                                     <a class="dropdown-item" href="/index">查看统计信息</a>
                                     <a class="dropdown-item" href="/details">查看详细信息</a>
                                 </div>
                             </li>
-                            <li class="nav-item dropdown">
+                            <li class="nav-item dropdown active">
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-pencil-alt"></span> 更新科研信息</a>
                                 <div class="dropdown-menu">
                                     <a class="dropdown-item" href="/update/auto">自动更新信息</a>
@@ -188,7 +188,7 @@
                                 </div>
                                 <div class="col-md-1">
                                     <br>
-                                    <input type="button" value="确定" class="btn btn-primary btn-lg" id="confirm_button">
+                                    <input type="button" value="确定" class="btn btn-primary btn-lg" id="manual_confirm_button">
                                 </div>
                             </div><br>
                             <div class="table-responsive mb-3">
@@ -196,12 +196,7 @@
                                 <table id="patent_table" class="table table-bordered table-striped">
                                     <thead>
                                         <tr>
-                                            <th class="no-sort">
-                                                <div class="custom-control custom-checkbox">
-                                                    <input class="custom-control-input" type="checkbox" id="select-all">
-                                                    <label class="custom-control-label" for="select-all"></label>
-                                                </div>
-                                            </th>
+                                            <th></th>
                                             <th>专利编号</th>
                                             <th>专利名称</th>
                                             <th>专利类型</th>
@@ -255,12 +250,7 @@
                                 <table id="paper_table" class="table table-bordered table-striped" style="display: none;">
                                     <thead>
                                         <tr>
-                                            <th class="no-sort">
-                                                <div class="custom-control custom-checkbox">
-                                                    <input class="custom-control-input" type="checkbox" id="select-all">
-                                                    <label class="custom-control-label" for="select-all"></label>
-                                                </div>
-                                            </th>
+                                            <th></th>
                                             <th>论文编号</th>
                                             <th>论文名称</th>
                                             <th>论文来源</th>
@@ -279,12 +269,7 @@
                                 <table id="project_table" class="table table-bordered table-striped" style="display: none;">
                                     <thead>
                                         <tr>
-                                            <th class="no-sort">
-                                                <div class="custom-control custom-checkbox">
-                                                    <input class="custom-control-input" type="checkbox" id="select-all">
-                                                    <label class="custom-control-label" for="select-all"></label>
-                                                </div>
-                                            </th>
+                                            <th></th>
                                             <th>项目编号</th>
                                             <th>项目名称</th>
                                             <th>项目来源</th>
@@ -298,7 +283,8 @@
                                     <tbody>
                                     </tbody>
                                 </table>
-                                <button type="button" class="btn btn-danger mt-3 mb-0" id="delete_button"><span class="ti-trash"></span> 删除</button>
+                                <button type="button" id="modify_detail" class="btn btn-primary mt-3 mb-0"><a id="modify_a"><span class="ti-pencil-alt"></span> 编辑</a></button>
+                                <button type="button" id="add_detail" class="btn btn-info mt-3 mb-0"> <a id="add_a"><span class="ti-plus"></span> 新增</a></button>
                             </div>
                         </div>
                     </div>
@@ -328,7 +314,7 @@
     <!-- Custom Script-->
     <script src="/static/js/custom.js"></script>
     <script src="/static/js/custom-datatables.js"></script>
-    <script src="/static/js/monitor.js"></script>
+    <script src="/static/js/detail.js"></script>
 </body>
 
 </html>

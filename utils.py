@@ -6,9 +6,9 @@
 """
 
 import requests
-import json
+import json, time, re, jieba
 from selenium import webdriver, common
-import time
+from threading import Thread, Event
 
 
 class PaperCrawler:
@@ -71,15 +71,6 @@ class PaperCrawler:
                 mirror_url = item["mirror_url"]
                 browser.get(mirror_url)
                 time.sleep(2)
-                # try:
-                #     keywords = browser.find_element_by_xpath\
-                #         ('/html/body/div[2]/div[1]/div[3]/div/div/div[3]/div[3]/p').text
-                # except common.exceptions.NoSuchElementException:
-                #     try:
-                #         keywords = browser.find_element_by_xpath\
-                #             ('/html/body/div[2]/div[1]/div[3]/div/div/div[5]/p').text
-                #     except common.exceptions.NoSuchElementException:
-                #         continue
                 try:
                     keywords = browser.find_element_by_xpath("//span[text()='关键词：']/following-sibling::p").text
                 except common.exceptions.NoSuchElementException:
@@ -133,39 +124,44 @@ class PatentCrawler:
             try:
                 # 每页有20条数据
                 for i in range(1, 21):
-                    my_xpath = '//*[@id="gridTable"]/table/tbody/tr[{}]/td[2]/a'.format(i)
-                    browser.find_element_by_xpath(my_xpath).click()
-                    time.sleep(2)
-                    # 切换到新打开的标签页
-                    windows = browser.window_handles
-                    browser.switch_to.window(windows[1])
-                    # 获取需要的信息
-                    patent_type = browser.find_element_by_xpath\
-                        ('/html/body/div[2]/div/div[1]/div[1]/div/div[2]/div[2]/p').text
-                    patent_id = browser.find_element_by_xpath\
-                        ('/html/body/div[2]/div/div[1]/div[1]/div/div[2]/div[3]/div[1]/p').text
-                    patent_time = browser.find_element_by_xpath\
-                        ('/html/body/div[2]/div/div[1]/div[1]/div/div[2]/div[3]/div[2]/p').text
-                    patent_name = browser.find_element_by_xpath\
-                        ('/html/body/div[2]/div/div[1]/div[1]/div/div[2]/div[1]/h1').text
-                    patent_data = {
-                        "patent_id": patent_id,
-                        "patent_name": patent_name,
-                        "patent_type": patent_type,
-                        "patent_time": patent_time
-                    }
-                    all_items.append(patent_data)
-                    print(patent_type, patent_id, patent_name, patent_time)
-                    browser.close()
-                    time.sleep(2)
-                    # 返回原来的标签页
-                    browser.switch_to.window(windows[0])
+                    try:
+                        my_xpath = '//*[@id="gridTable"]/table/tbody/tr[{}]/td[2]/a'.format(i)
+                        browser.find_element_by_xpath(my_xpath).click()
+                        time.sleep(2)
+                        # 切换到新打开的标签页
+                        windows = browser.window_handles
+                        browser.switch_to.window(windows[1])
+                        # 获取需要的信息
+                        patent_type = browser.find_element_by_xpath("//span[text()='专利类型：']/following-sibling::p").text
+                        patent_id = browser.find_element_by_xpath("//span[text()='申请(专利)号：']/following-sibling::p").text
+                        patent_time = browser.find_element_by_xpath("//span[text()='申请日：']/following-sibling::p").text
+                        patent_name = browser.find_element_by_xpath\
+                            ('/html/body/div[2]/div/div[1]/div[1]/div/div[2]/div[1]/h1').text
+                        inventors = browser.find_element_by_xpath("//span[text()='发明人：']/following-sibling::p").text
+                        inventors = re.sub(' ', '', inventors)
+                        inventors = inventors.split(';')
+                        patent_data = {
+                            "patent_id": patent_id,
+                            "patent_name": patent_name,
+                            "patent_type": patent_type,
+                            "patent_time": patent_time,
+                            "inventor_rank": inventors.index(self.name)
+                        }
+                        all_items.append(patent_data)
+                        print(patent_data)
+                        browser.close()
+                        time.sleep(2)
+                        # 返回原来的标签页
+                        browser.switch_to.window(windows[0])
+                    except common.exceptions.ElementNotInteractableException:
+                        continue
                 # 一页获取完成之后翻页
                 time.sleep(1)
                 browser.find_element_by_xpath('//*[@id="PageNext"]').click()
                 time.sleep(2)
             except common.exceptions.NoSuchElementException:
                 break
+
         browser.quit()
         print(len(all_items))
         return all_items
@@ -220,7 +216,13 @@ class ProjectCrawler:
                     time.sleep(1)
                     project_principal = browser_detail.find_element_by_xpath\
                         ('//*[@id="data_view"]/tbody/tr[1]/td[1]').text
+                    project_principal_title = browser_detail.find_element_by_xpath\
+                        ('//*[@id="data_view"]/tbody/tr[1]/td[2]').text
                     project_time = browser_detail.find_element_by_xpath('//*[@id="data_view"]/tbody/tr[1]/td[6]').text
+                    if project_principal == self.name:
+                        participant_rank = 0
+                    else:
+                        participant_rank = 1
                     # 构造返回的信息
                     project_data = {
                         "project_id": project_id,
@@ -229,7 +231,9 @@ class ProjectCrawler:
                         "project_source": project_source,
                         "project_state": project_state,
                         "project_principal": project_principal,
-                        "project_time": project_time[0:-1]
+                        "project_principal_title": project_principal_title,
+                        "project_time": project_time[0:-1],
+                        "participant_rank": participant_rank
                     }
                     print(project_data)
                     if project_data not in all_items:
@@ -247,6 +251,33 @@ class ProjectCrawler:
         browser_detail.quit()
         print(len(all_items))
         return all_items
+
+
+class MyTimer(Thread):
+    def __init__(self, user_id, interval, function, args=None, kwargs=None):
+        Thread.__init__(self)
+        self.user_id = user_id
+        self.interval = interval
+        self.function = function
+        self.args = args if args is not None else []
+        self.kwargs = kwargs if kwargs is not None else {}
+        self.finished = Event()
+
+    def cancel(self):
+        """Stop the timer if it hasn't finished yet."""
+        self.finished.set()
+
+    def run(self):
+        self.finished.wait(self.interval)
+        if not self.finished.is_set():
+            self.function(*self.args, **self.kwargs)
+        self.finished.set()
+
+
+def split_words(para):
+    candidate_generator = jieba.cut(para)
+    candidate_list = list(candidate_generator)
+    return candidate_list
 
 
 # if __name__ == "__main__":

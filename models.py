@@ -72,16 +72,18 @@ class Project(db.Model):
     project_source = db.Column(db.String(128), nullable=True)
     project_state = db.Column(db.String(128), nullable=True)
     project_principal = db.Column(db.String(128), nullable=True)
-    project_time = db.Column(db.DateTime, nullable=True)
+    project_principal_title = db.Column(db.String(128), nullable=True)
+    project_time = db.Column(db.Date, nullable=True)
 
     def __init__(self, project_id, project_name, project_type, project_source,
-                 project_state, project_principal, project_time):
+                 project_state, project_principal, project_principal_title, project_time):
         self.project_id = project_id
         self.project_name = project_name
         self.project_type = project_type
         self.project_source = project_source
         self.project_state = project_state
         self.project_principal = project_principal
+        self.project_principal_title = project_principal_title
         self.project_time = project_time
 
     def __repr__(self):
@@ -143,6 +145,21 @@ class Patent(db.Model):
         return "<Patent %r %r>" % (self.patent_id, self.patent_name)
 
 
+class Participate(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    teacher_id = db.Column(db.String(128), nullable=False)
+    project_id = db.Column(db.String(128), nullable=False)
+    teacher_type = db.Column(db.Integer, nullable=False)
+
+    def __init__(self, teacher_id, project_id, teacher_type):
+        self.teacher_id = teacher_id
+        self.project_id = project_id
+        self.teacher_type = teacher_type
+
+    def __repr__(self):
+        return "<Participate %r %r>" % (self.teacher_id, self.project_id)
+
+
 class Deliver(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     teacher_id = db.Column(db.String(128), nullable=False)
@@ -163,11 +180,13 @@ class Apply(db.Model):
     teacher_id = db.Column(db.String(128), nullable=False)
     patent_id = db.Column(db.String(128), nullable=False)
     patent_type = db.Column(db.String(128), nullable=True)
+    teacher_type = db.Column(db.Integer, nullable=False)
 
-    def __init__(self, teacher_id, patent_id, patent_type):
+    def __init__(self, teacher_id, patent_id, patent_type, teacher_type):
         self.teacher_id = teacher_id
         self.patent_id = patent_id
         self.patent_type = patent_type
+        self.teacher_type = teacher_type
 
     def __repr__(self):
         return "<Apply %r %r %r>" % (self.teacher_id, self.patent_id, self.patent_type)

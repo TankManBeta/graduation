@@ -68,9 +68,17 @@ class PaperCrawler:
                 authors = item["author"][0:-1].split(';')
                 authors = [item.strip() for item in authors]
                 # 获取关键字
+                count = 0
                 mirror_url = item["mirror_url"]
-                browser.get(mirror_url)
-                time.sleep(2)
+                try:
+                    browser.get(mirror_url)
+                    time.sleep(3)
+                except common.exceptions.WebDriverException:
+                    if count == 6:
+                        continue
+                    else:
+                        browser.get(mirror_url)
+                        time.sleep(3)
                 try:
                     keywords = browser.find_element_by_xpath("//span[text()='关键词：']/following-sibling::p").text
                 except common.exceptions.NoSuchElementException:
@@ -101,6 +109,7 @@ class PatentCrawler:
         options.add_argument('--headless')
         options.add_argument('--disable-gpu')
         browser = webdriver.Chrome(self.executable_path, options=options)
+        # browser = webdriver.Chrome(self.executable_path)
         browser.get(self.patent_url)
         time.sleep(2)
         # 设置第一个检索条件
@@ -127,6 +136,7 @@ class PatentCrawler:
                     try:
                         my_xpath = '//*[@id="gridTable"]/table/tbody/tr[{}]/td[2]/a'.format(i)
                         browser.find_element_by_xpath(my_xpath).click()
+                        print("点击了")
                         time.sleep(2)
                         # 切换到新打开的标签页
                         windows = browser.window_handles
@@ -161,7 +171,6 @@ class PatentCrawler:
                 time.sleep(2)
             except common.exceptions.NoSuchElementException:
                 break
-
         browser.quit()
         print(len(all_items))
         return all_items
@@ -243,8 +252,9 @@ class ProjectCrawler:
                     # 返回原来的标签页
                     browser.switch_to.window(windows[0])
                 # 一页获取完成之后翻页
-                time.sleep(1)
+                time.sleep(2)
                 browser.find_element_by_xpath('//*[@id="pageNoUl"]/li[5]/a').click()
+                time.sleep(2)
             except common.exceptions.NoSuchElementException:
                 break
         browser.quit()
@@ -281,12 +291,12 @@ def split_words(para):
 
 
 # if __name__ == "__main__":
-#     paper_crawler = PaperCrawler("王薇", "西北大学信息科学与技术学院")
-#     data1 = paper_crawler.get_data()
-#     paper_crawler.handler_paper_items(data1)
-#     patent_crawler = PatentCrawler("王薇", "西北大学")
+#     patent_crawler = PatentCrawler("陈晓江", "西北大学")
 #     data2 = patent_crawler.get_data()
-#     project_crawler = ProjectCrawler("陈晓江", "西北大学")
-#     project_crawler.get_data()
+    # paper_crawler = PaperCrawler("王薇", "西北大学信息科学与技术学院")
+    # data1 = paper_crawler.get_data()
+    # paper_crawler.handler_paper_items(data1)
+    # project_crawler = ProjectCrawler("陈晓江", "西北大学")
+    # project_crawler.get_data()
 
 

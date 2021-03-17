@@ -29,18 +29,15 @@ $("#confirm_button").click(function () {
         data:JSON.stringify(data),
         success(table_data){
             if(table_data["type"] === 0){
-                // $("#paper_table_wrapper").css('display', 'none');
+                $("#select-all").prop("checked", false);
                 atable = $('#paper_table').dataTable();
                 atable.fnClearTable(); //清空一下table
                 atable.fnDestroy();//还原初始化了的datatable;
                 $("#paper_table").css('display', 'none');
-
-                // $("#project_table_wrapper").css('display', 'none');
                 btable = $('#project_table').dataTable();
                 btable.fnClearTable(); //清空一下table
                 btable.fnDestroy();//还原初始化了的datatable;
                 $("#project_table").css('display', 'none');
-
                 $("#patent_table").show();
                 otable = $('#patent_table').dataTable();
                 otable.fnClearTable(); //清空一下table
@@ -57,18 +54,15 @@ $("#confirm_button").click(function () {
                 });
             }
             if(table_data["type"] === 1){
-                // $("#patent_table_wrapper").css('display', 'none');
+                $("#select-all").prop("checked", false);
                 atable = $('#patent_table').dataTable();
                 atable.fnClearTable(); //清空一下table
                 atable.fnDestroy();//还原初始化了的datatable;
                 $("#patent_table").css('display', 'none');
-
-                // $("#project_table_wrapper").css('display', 'none');
                 btable = $('#project_table').dataTable();
                 btable.fnClearTable(); //清空一下table
                 btable.fnDestroy();//还原初始化了的datatable;
                 $("#project_table").css('display', 'none');
-
                 $("#paper_table").show();
                 otable = $('#paper_table').dataTable();
                 otable.fnClearTable(); //清空一下table
@@ -85,18 +79,15 @@ $("#confirm_button").click(function () {
                 });
             }
             if(table_data["type"] === 2){
-                // $("#patent_table_wrapper").css('display', 'none');
+                $("#select-all").prop("checked", false);
                 atable = $('#patent_table').dataTable();
                 atable.fnClearTable(); //清空一下table
                 atable.fnDestroy();//还原初始化了的datatable;
                 $("#patent_table").css('display', 'none');
-
-                // $("#project_table_wrapper").css('display', 'none');
                 btable = $('#paper_table').dataTable();
                 btable.fnClearTable(); //清空一下table
                 btable.fnDestroy();//还原初始化了的datatable;
                 $("#paper_table").css('display', 'none');
-
                 $("#project_table").show();
                 otable = $('#project_table').dataTable();
                 otable.fnClearTable(); //清空一下table

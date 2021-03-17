@@ -157,59 +157,49 @@
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
                                         <label for="patient-name">专利编号</label>
-                                        <input type="text" class="form-control" id="patient-name">
+                                        <input type="text" class="form-control" id="patent_id" value="{{ patent_data['patent_id'] }}" readonly="readonly">
                                     </div>
 
                                     <div class="form-group col-md-6">
                                         <label for="age">专利名称</label>
-                                        <input type="text" class="form-control" id="age">
+                                        <input type="text" class="form-control" id="patent_name" value="{{ patent_data['patent_name'] }}" readonly="readonly">
                                     </div>
 
                                     <div class="form-group col-md-6">
                                         <label for="gender">专利类型</label>
-                                        <select class="form-control" id="gender">
-											<option>实用型</option>
-											<option>发明型</option>
+                                        <select class="form-control" id="patent_type" disabled="disabled">
+											<option value="{{ patent_data['patent_type'] }}">{{ patent_data['patent_type'] }}</option>
 										</select>
                                     </div>
 
                                     <div class="form-group col-md-6">
                                         <label for="dob">申请日期</label>
-                                        <input type="date" placeholder="Date of Birth" class="form-control" id="dob">
+                                        <input type="date" class="form-control" id="patent_time" value="{{ patent_data['patent_time'] }}" readonly="readonly">
                                     </div>
 
                                     <div class="form-group col-md-6">
                                         <label for="email">专利权人</label>
-                                        <input type="text" class="form-control" id="Email">
+                                        <input type="text" class="form-control" id="patent_owner" value="{{ patent_data['patent_owner'] }}" readonly="readonly">
                                     </div>
 
                                     <div class="form-group col-md-6">
                                         <label for="gender">专利状态</label>
-                                        <select class="form-control" id="gender">
-											<option>受理中</option>
-											<option>已申请</option>
-                                            <option>已授权</option>
+                                        <select class="form-control" id="patent_state">
+											<option value="已申请" {% if patent_data['patent_state'] == "已申请" %}selected{% endif %}>已申请</option>
+											<option value="已受理" {% if patent_data['patent_state'] == "已受理" %}selected{% endif %}>已受理</option>
+                                            <option value="已审核" {% if patent_data['patent_state'] == "已审核" %}selected{% endif %}>已审核</option>
+                                            <option value="已授权" {% if patent_data['patent_state'] == "已授权" %}selected{% endif %}>已授权</option>
+                                            <option value="已公开" {% if patent_data['patent_state'] == "已公开" %}selected{% endif %}>已公开</option>
 										</select>
                                     </div>
 
                                     <div class="form-group col-md-6 mb-3">
-                                        <button type="submit" class="btn btn-primary btn-lg">提交</button>
+                                        <button type="button" class="btn btn-primary btn-lg" id="patent_submit">提交</button>
                                     </div>
                                 </div>
                             </form>
                             <!-- Alerts-->
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <strong>添加成功!</strong>
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true">×</span>
-								</button>
-                            </div>
-                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                                <strong>添加失败!</strong> 请重新检查填写的信息
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true">×</span>
-								</button>
-                            </div>
+                            <div id="result_hint"></div>
                             <!-- /Alerts-->
                         </div>
                     </div>
@@ -217,13 +207,6 @@
                 </div>
             </div>
             <!-- /Main Content -->
-            <!--Copy Rights-->
-            <div class="container">
-                <div class="d-sm-flex justify-content-center">
-                    <span class="text-muted text-center d-block d-sm-inline-block">Copyright © 2018 <a href="#" target="_blank">konnectcode</a>. All rights reserved.</span> 更多模板：<a href="http://www.mycodes.net/" target="_blank">源码之家</a>
-                </div>
-            </div>
-            <!-- /Copy Rights-->
         </div>
         <!-- /Page Content -->
     </div>
@@ -246,7 +229,9 @@
     <!-- Custom Script-->
     <script src="/static/js/custom.js"></script>
     <!-- External Script-->
-    <script src="/static/js/distpicker.js "></script>
+    <script src="/static/js/distpicker.js"></script>
+    <!-- submit info -->
+    <script src="/static/js/info.js"></script>
 
 </body>
 

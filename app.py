@@ -623,14 +623,9 @@ def delete_project():
         return ""
 
 
-# all_timer = []
-# all_timer_iterator = 0
-
-
 @app.route("/update/auto", methods=["GET", "POST"])
 @login_required
 def update_auto():
-    # global all_timer_iterator
     global timer1, timer2
     if request.method == "GET":
         return render_template("auto_update.html")
@@ -649,33 +644,14 @@ def update_auto():
             address2 = split_words(address2)[3]
             timer1 = MyTimer(current_user.user_id, interval, update_info, (name, address1, user_data[3], is_inform))
             timer2 = MyTimer(current_user.user_id, interval, update_info, (name, address2, user_data[3], is_inform))
-            # 删除已有的定时任务
-            # while all_timer_iterator < len(all_timer):
-            #     if all_timer[all_timer_iterator].user_id == current_user.user_id:
-            #         temp = all_timer_iterator
-            #         del all_timer[all_timer_iterator]
-            #         all_timer_iterator = temp
-            #     else:
-            #         all_timer_iterator += 1
             # 启动定时任务
             timer1.start()
-            # all_timer.append(timer1)
             timer2.start()
-            # all_timer.append(timer2)
         else:
             timer1 = MyTimer(current_user.user_id, interval, update_info,
                              (interval, name, address1, user_data[3], is_inform))
-            # 删除已有的定时任务
-            # while all_timer_iterator < len(all_timer):
-            #     if all_timer[all_timer_iterator].user_id == current_user.user_id:
-            #         temp = all_timer_iterator
-            #         del all_timer[all_timer_iterator]
-            #         all_timer_iterator = temp
-            #     else:
-            #         all_timer_iterator += 1
-            # 启动定时任务并加入列表
+            # 启动定时任务
             timer1.start()
-            # all_timer.append(timer1)
         return jsonify("success")
 
 
@@ -992,23 +968,135 @@ def update_manual():
             return jsonify(table_data)
 
 
-@app.route("/modify/patent", methods=["GET", "POST"])
+@app.route("/modify/patent/<patent_id>", methods=["GET", "POST"])
 @login_required
-def modify_patent():
+def modify_patent(patent_id):
     if request.method == "GET":
-        return render_template("modify_patent.html")
+        patent_info = db.session.query(Patent).filter(Patent.id == patent_id).with_entities(
+            Patent.patent_id, Patent.patent_name, Patent.patent_type, Patent.patent_state, Patent.patent_time,
+            Patent.patent_owner).first()
+        if len(patent_info) != 0:
+            data = {"patent_id": patent_info[0], "patent_name": patent_info[1], "patent_type": patent_info[2],
+                    "patent_state": patent_info[3], "patent_time": patent_info[4].strftime('%Y-%m-%d'),
+                    "patent_owner": patent_info[5]}
+        else:
+            data = {"patent_id": "", "patent_name": "", "patent_type": "", "patent_state": "", "patent_time": "",
+                    "patent_owner": ""}
+        return render_template("modify_patent.html", patent_data=data)
+    if request.method == "POST":
+        data = request.get_json()
+        patent_state = data["patent_state"]
+        patent_info = db.session.query(Patent).filter(Patent.id == patent_id).first()
+        if patent_info is not None:
+            patent_info.patent_state = patent_state
+            db.session.commit()
+            msg = "yes"
+        else:
+            msg = "no"
+        return jsonify(msg)
+
+
+@app.route("/modify/paper/<paper_id>", methods=["GET", "POST"])
+@login_required
+def modify_paper(paper_id):
+    if request.method == "GET":
+        paper_info = db.session.query(Paper).filter(Paper.id == paper_id).with_entities(
+            Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_region, Paper.paper_time,
+            Paper.paper_state, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence, Paper.paper_search_type,
+            Paper.paper_doi).first()
+        if len(paper_info) != 0:
+            data = {
+                "paper_id": paper_info[0], "paper_name": paper_info[1], "paper_source": paper_info[2],
+                "paper_region": paper_info[3], "paper_time": paper_info[4], "paper_state": paper_info[5],
+                "paper_keywords": paper_info[6], "paper_quote": paper_info[7], "paper_influence": paper_info[8],
+                "paper_search_type": paper_info[9], "paper_doi": paper_info[10]
+            }
+        else:
+            data = {
+                "paper_id": "", "paper_name": "", "paper_source": "", "paper_region": "", "paper_time": "",
+                "paper_state": "", "paper_keywords": "", "paper_quote": "", "paper_influence": "",
+                "paper_search_type": "", "paper_doi": ""
+            }
+        return render_template("modify_paper.html", paper_data=data)
+    if request.method == "POST":
+        data = request.get_json()
+        # 获取返回的信息
+        paper_state = data["paper_state"]
+        paper_quote = data["paper_quote"]
+        paper_influence = data["paper_influence"]
+        paper_search_type = data["paper_search_type"]
+        paper_press = data["paper_press"]
+        paper_doi = data["paper_doi"]
+        # 查询信息
+        paper_info = db.session.query(Paper).filter(Paper.id == paper_id).first()
+        # 修改信息
+        if paper_info is not None:
+            try:
+                paper_info.paper_state = paper_state
+                paper_info.paper_quote = paper_quote
+                paper_info.paper_influence = paper_influence
+                paper_info.paper_search_type = paper_search_type
+                paper_info.paper_press = paper_press
+                paper_info.paper_doi = paper_doi
+                db.session.commit()
+                msg = "yes"
+            except:
+                msg = "no"
+        else:
+            msg = "yes"
+        return jsonify(msg)
+
+
+@app.route("/modify/project/<project_id>", methods=["GET", "POST"])
+@login_required
+def modify_project(project_id):
+    if request.method == "GET":
+        project_info = db.session.query(Project).filter(Project.id == project_id).with_entities(
+            Project.project_id, Project.project_name, Project.project_source, Project.project_type,
+            Project.project_time, Project.project_state, Project.project_principal, Project.project_principal_title
+        ).first()
+        if len(project_info) != 0:
+            data = {
+                "project_id": project_info[0], "project_name": project_info[1], "project_source": project_info[2],
+                "project_type": project_info[3], "project_time": project_info[4], "project_state": project_info[5],
+                "project_principal": project_info[6], "project_principal_title": project_info[7]
+            }
+        else:
+            data = {
+                "project_id": "", "project_name": "", "project_source": "", "project_type": "", "project_time": "",
+                "project_state": "", "project_principal": "", "project_principal_title": ""
+            }
+        return render_template("modify_project.html", project_data=data)
+    if request.method == "POST":
+        data = request.get_json()
+        project_state = data["project_state"]
+        project_principal_title = data["project_principal_title"]
+        print(data)
+        project_info = db.session.query(Project).filter(Project.id == project_id).first()
+        if project_info is not None:
+            project_info.project_state = project_state
+            project_info.project_principal_title = project_principal_title
+            db.session.commit()
+            msg = "yes"
+        else:
+            msg = "no"
+        return jsonify(msg)
 
 
 def update_info(interval, name, address, user_id, inform):
     global timer1
     print("我在定时执行")
-    # threads = [threading.Thread(target=get_papers, args=(name, address, user_id, inform)),
-    #            threading.Thread(target=get_patents, args=(name, address, user_id, inform)),
-    #            threading.Thread(target=get_projects, args=(name, address, user_id, inform))]
-    # for thread in threads:
-    #     thread.start()
-    timer1 = MyTimer(user_id, interval, update_info, (interval, name, address, user_id, inform))
-    timer1.start()
+    try:
+        get_papers(name, address, user_id, inform)
+    except:
+        try:
+            get_patents(name, address, user_id, inform)
+        except:
+            try:
+                get_projects(name, address, user_id, inform)
+            except:
+                timer1 = MyTimer(user_id, interval, update_info, (interval, name, address, user_id, inform))
+                timer1.start()
 
 
 timer1 = MyTimer("", 10, update_info)
@@ -1032,7 +1120,9 @@ def get_papers(name, address, user_id, inform):
         paper_keywords = item["keywords"]
         author_rank = item["author_rank"]
         # 检查论文是否已经存在
-        paper_in = db.session.query(Paper).filter(Paper.paper_id == paper_id).first()
+        paper_in = db.session.query(Paper).filter(Paper.paper_id == paper_id).with_entities(
+            Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time, Paper.paper_region,
+            Paper.paper_keywords).all()
         # 未存在就插入
         if len(paper_in) == 0:
             paper = Paper(paper_id, paper_name, paper_source, paper_publish_time, address, paper_keywords, 0, 0, "", "",
@@ -1050,10 +1140,11 @@ def get_papers(name, address, user_id, inform):
             # 存在一项不一样
             if exist_data[0] != paper_id or exist_data[1] != paper_name or exist_data[2] != paper_source or \
                     exist_data[3] != paper_publish_time or exist_data[4] != address or exist_data[5] != paper_keywords:
-                db.session.delete(paper_in)
+                in_data = db.session.query(Paper).filter(Paper.paper_id == paper_id).first()
+                db.session.delete(in_data)
                 db.session.commit()
-                paper = Paper(paper_id, paper_name, paper_source, paper_publish_time, address, paper_keywords, 0, 0, "", "",
-                              "", "已发表")
+                paper = Paper(paper_id, paper_name, paper_source, paper_publish_time, address, paper_keywords, 0, 0, "",
+                              "", "", "已发表")
                 db.session.add(paper)
                 db.session.commit()
                 new_info = "yes"
@@ -1065,13 +1156,14 @@ def get_papers(name, address, user_id, inform):
             db.session.commit()
     # 是否邮件告知
     if inform == "yes" and new_info == "yes":
+        app.app_context().push()
         account = db.session.query(User).filter(User.user_id == user_id).with_entities(User.email).first()[0]
         message = Message('科研信息管理系统', recipients=[account], body='您的论文信息有更新')
         mail.send(message)
     print("论文信息获取成功")
 
 
-# 获取专利信息
+# 获取更新专利信息
 def get_patents(name, address, user_id, inform):
     print("开始获取专利信息")
     patent_crawler = PatentCrawler(name, address)
@@ -1086,7 +1178,10 @@ def get_patents(name, address, user_id, inform):
         inventor_rank = item["inventor_rank"]
         patent_state = '已' + patent_type[2:]
         # 检查专利是否存在
-        patent_in = db.session.query(Patent).filter(Patent.patent_id == patent_id, Patent.patent_type == patent_type).first()
+        patent_in = db.session.query(Patent).filter(Patent.patent_id == patent_id, Patent.patent_type ==
+                                                    patent_type).with_entities(
+            Patent.patent_id, Patent.patent_name, Patent.patent_owner, Patent.patent_time, Patent.patent_state,
+            Patent.patent_type).all()
         # 不存在就加入
         if len(patent_in) == 0:
             patent = Patent(patent_id, patent_name, address, patent_time, patent_state, patent_type)
@@ -1105,7 +1200,9 @@ def get_patents(name, address, user_id, inform):
             # 对比是否有不同的信息
             if exist_data[0] != patent_id or exist_data[1] != patent_name or exist_data[2] != address or \
                     exist_data[3] != patent_time or exist_data[4] != patent_state or exist_data[5] != patent_type:
-                db.session.delete(patent_in)
+                in_data = db.session.query(Patent).filter(Patent.patent_id == patent_id, Patent.patent_type ==
+                                                          patent_type).first()
+                db.session.delete(in_data)
                 db.session.commit()
                 patent_state = '已' + patent_type[2:]
                 patent = Patent(patent_id, patent_name, address, patent_time, patent_state, patent_type)
@@ -1121,12 +1218,14 @@ def get_patents(name, address, user_id, inform):
             db.session.commit()
     # 是否邮件告知
     if inform == "yes" and new_info == "yes":
+        app.app_context().push()
         account = db.session.query(User).filter(User.user_id == user_id).with_entities(User.email).first()[0]
         message = Message('科研信息管理系统', recipients=[account], body='您的专利信息有更新')
         mail.send(message)
     print("专利信息获取成功")
 
 
+# 获取更新项目信息
 def get_projects(name, address, user_id, inform):
     print("开始获取项目信息")
     project_crawler = ProjectCrawler(name, address)
@@ -1143,7 +1242,10 @@ def get_projects(name, address, user_id, inform):
         project_time = parse(item["project_time"])
         participant_rank = item["participant_rank"]
         # 检查项目是否已存在
-        project_in = db.session.query(Project).filter(Project.project_id == project_id).first()
+        project_in = db.session.query(Project).filter(Project.project_id == project_id).with_entities(
+            Project.project_id, Project.project_name, Project.project_type, Project.project_source,
+            Project.project_state, Project.project_principal, Project.project_principal_title, Project.project_time
+        ).all()
         # 不存在就插入
         if len(project_in) == 0:
             project = Project(project_id, project_name, project_type, project_source, project_state, project_principal,
@@ -1163,7 +1265,8 @@ def get_projects(name, address, user_id, inform):
                     exist_data[3] != project_source or exist_data[4] != project_state or exist_data[5] != \
                     project_principal or exist_data[6] != project_principal_title or exist_data[7] != project_time:
                 # 不一致就先删除再插入
-                db.session.delete(project_in)
+                in_data = db.session.query(Project).filter(Project.project_id == project_id).first()
+                db.session.delete(in_data)
                 db.session.commit()
                 project = Project(project_id, project_name, project_type, project_source, project_state, project_principal,
                                   project_principal_title, project_time)
@@ -1179,6 +1282,7 @@ def get_projects(name, address, user_id, inform):
             db.session.commit()
     # 是否邮件告知
     if inform == "yes" and new_info == "yes":
+        app.app_context().push()
         account = db.session.query(User).filter(User.user_id == user_id).with_entities(User.email).first()[0]
         message = Message('科研信息管理系统', recipients=[account], body='您的专利信息有更新')
         mail.send(message)

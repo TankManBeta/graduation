@@ -7,24 +7,24 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>科研信息采集与管理系统</title>
     <!-- Fav  Icon Link -->
-    <link rel="shortcut icon" type="image/png" href="images/fav.png">
+    <link rel="shortcut icon" type="image/png" href="/static/images/fav.png">
     <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
     <!-- themify icons CSS -->
-    <link rel="stylesheet" href="css/themify-icons.css">
+    <link rel="stylesheet" href="/static/css/themify-icons.css">
     <!-- Animations CSS -->
-    <link rel="stylesheet" href="css/animate.css">
+    <link rel="stylesheet" href="/static/css/animate.css">
     <!-- Main CSS -->
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/green.css" id="style_theme">
-    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/green.css" id="style_theme">
+    <link rel="stylesheet" href="/static/css/responsive.css">
     <!-- morris charts -->
-    <link rel="stylesheet" href="charts/css/morris.css">
+    <link rel="stylesheet" href="/static/charts/css/morris.css">
     <!-- jvectormap -->
-    <link rel="stylesheet" href="css/jquery-jvectormap.css">
-    <link rel="stylesheet" href="datatable/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="/static/css/jquery-jvectormap.css">
+    <link rel="stylesheet" href="/static/datatable/dataTables.bootstrap4.min.css">
 
-    <script src="js/modernizr.min.js"></script>
+    <script src="/static/js/modernizr.min.js"></script>
 </head>
 
 <body>
@@ -56,7 +56,7 @@
                 <nav class="navbar navbar-default">
                     <div class="navbar-header">
                         <div class="sidebar-header">
-                            <a href="index.html"><img src="images/logo-dark.png" class="logo" alt="logo"></a>
+                            <a href="/index"><img src="/static/images/logo-dark.png" class="logo" alt="logo"></a>
                         </div>
                     </div>
                     <ul class="nav justify-content-end">
@@ -70,8 +70,8 @@
                                 <span class="ti-user"></span>
                             </a>
                             <div class="dropdown-menu lochana-box-shadow2 profile animated flipInY">
-                                <h5>John Willing</h5>
-                                <a class="dropdown-item" href="#">
+                                <h5>{{ current_user.username }}</h5>
+                                <a class="dropdown-item" href="/logout">
                                     <span class="ti-power-off"></span> 退出</a>
                             </div>
                         </li>
@@ -92,31 +92,30 @@
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-home"></span> 查看科研信息</a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="index.html">查看统计信息</a>
-                                    <a class="dropdown-item" href="patients.html">查看详细信息</a>
+                                    <a class="dropdown-item" href="/index">查看统计信息</a>
+                                    <a class="dropdown-item" href="/details">查看详细信息</a>
                                 </div>
                             </li>
                             <li class="nav-item dropdown active">
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-pencil-alt"></span> 更新科研信息</a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="404.html">自动更新信息</a>
-                                    <a class="dropdown-item" href="patients_1.html">手动更新信息</a>
+                                    <a class="dropdown-item" href="/update/auto">自动更新信息</a>
+                                    <a class="dropdown-item" href="/update/manual">手动更新信息</a>
                                 </div>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-file"></span> 导出科研信息</a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="add-doctor.html">导出通用格式信息</a>
-                                    <a class="dropdown-item" href="doctors.html">导出定制格式信息</a>
+                                    <a class="dropdown-item" href="/export/common">导出通用格式信息</a>
+                                    <a class="dropdown-item" href="/export/special">导出定制格式信息</a>
                                 </div>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-user"></span> 管理个人信息</a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="add-appointment.html">修改个人信息</a>
-                                    <a class="dropdown-item" href="appointments.html">修改密码</a>
+                                    <a class="dropdown-item" href="/modify/info">修改个人信息</a>
+                                    <a class="dropdown-item" href="/modify/password">修改密码</a>
                                 </div>
-                            </li>
                             </li>
                         </ul>
                     </div>
@@ -133,7 +132,7 @@
                     <div class="col-md-6">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item">
-                                <a href="index.html">
+                                <a href="/index">
                                     <span class="ti-home"></span>
                                 </a>
                             </li>
@@ -156,77 +155,78 @@
                             <h3 class="widget-title">修改信息</h3>
                             <form>
                                 <div class="form-row">
+
                                     <div class="form-group col-md-6">
-                                        <label for="patient-name">论文编号</label>
-                                        <input type="text" class="form-control" id="patient-name">
+                                        <label for="paper_id">论文编号</label>
+                                        <input type="text" class="form-control" id="paper_id" readonly="readonly" value="{{ paper_data['paper_id'] }}">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="paper_name">论文名称</label>
+                                        <input type="text" class="form-control" id="paper_name" value="{{ paper_data['paper_name'] }}" readonly="readonly">
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                        <label for="age">论文名</label>
-                                        <input type="text" class="form-control" id="age">
+                                        <label for="paper_source">论文来源</label>
+                                        <input type="text" class="form-control" id="paper_source" value="{{ paper_data['paper_source'] }}" readonly="readonly">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="paper_region">机构地区</label>
+                                        <input type="text" class="form-control" id="paper_region" value="{{ paper_data['paper_region'] }}" readonly="readonly">
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                        <label for="phone">论文来源</label>
-                                        <input type="text" class="form-control" id="phone">
+                                        <label for="paper_time">发表日期</label>
+                                        <input type="date" placeholder="Date of Birth" class="form-control" id="paper_time" value="{{ paper_data['paper_time'] }}" readonly="readonly">
                                     </div>
-
                                     <div class="form-group col-md-6">
-                                        <label for="dob">发表日期</label>
-                                        <input type="date" placeholder="Date of Birth" class="form-control" id="dob">
-                                    </div>
-
-                                    <div class="form-group col-md-6">
-                                        <label for="email">论文关键字</label>
-                                        <input type="text" class="form-control" id="Email">
-                                    </div>
-
-                                    <div class="form-group col-md-6">
-                                        <label for="email">被引量</label>
-                                        <input type="text" class="form-control" id="Email">
-                                    </div>
-
-                                    <div class="form-group col-md-6">
-                                        <label for="email">影响因子</label>
-                                        <input type="text" class="form-control" id="Email">
-                                    </div>
-
-                                    <div class="form-group col-md-6">
-                                        <label for="gender">检索类型</label>
-                                        <select class="form-control" id="gender">
-											<option>SCI1区</option>
-											<option>SCI2区</option>
-											<option>SCI3区</option>
-                                            <option>SCI4区</option>
+                                        <label for="paper_state">论文状态</label>
+                                        <select class="form-control" id="paper_state">
+											<option value="已投递" {% if paper_data['paper_state']=='已投递' %}selected{% endif %}>已投递</option>
+											<option value="已审核" {% if paper_data['paper_state']=='已审核' %}selected{% endif %}>已审核</option>
+											<option value="已发表" {% if paper_data['paper_state']=='已发表' %}selected{% endif %}>已发表</option>
 										</select>
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                        <label for="email">刊登信息</label>
-                                        <input type="text" class="form-control" id="Email">
+                                        <label for="paper_keywords">论文关键字</label>
+                                        <input type="text" class="form-control" id="paper_keywords" value="{{ paper_data['paper_keywords'] }}" readonly="readonly">
                                     </div>
                                     <div class="form-group col-md-6">
-                                        <label for="email">DOI号</label>
-                                        <input type="text" class="form-control" id="Email">
+                                        <label for="paper_quote">被引量</label>
+                                        <input type="text" class="form-control" id="paper_quote" value="{{ paper_data['paper_quote'] }}">
                                     </div>
+
+                                    <div class="form-group col-md-6">
+                                        <label for="paper_influence">影响因子</label>
+                                        <input type="text" class="form-control" id="paper_influence" value="{{ paper_data['paper_influence'] }}">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="paper_search_type">检索类型</label>
+                                        <select class="form-control" id="paper_search_type">
+                                            <option value="无">无</option>
+											<option value="SCI1区" {% if paper_data['paper_search_type'] == 'SCI1区' %}selected{% endif %}>SCI1区</option>
+											<option value="SCI2区" {% if paper_data['paper_search_type'] == 'SCI2区' %}selected{% endif %}>SCI2区</option>
+											<option value="SCI3区" {% if paper_data['paper_search_type'] == 'SCI3区' %}selected{% endif %}>SCI3区</option>
+                                            <option value="SCI4区" {% if paper_data['paper_search_type'] == 'SCI4区' %}selected{% endif %}>SCI4区</option>
+										</select>
+                                    </div>
+
+                                    <div class="form-group col-md-6">
+                                        <label for="paper_press">刊登信息</label>
+                                        <input type="text" class="form-control" id="paper_press" value="{{ paper_data['paper_press'] }}">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="paper_doi">DOI号</label>
+                                        <input type="text" class="form-control" id="paper_doi" value="{{ paper_data['paper_doi'] }}">
+                                    </div>
+
                                     <div class="form-group col-md-6 mb-3">
-                                        <button type="submit" class="btn btn-primary btn-lg">提交</button>
+                                        <button type="button" class="btn btn-primary btn-lg" id="paper_submit">提交</button>
                                     </div>
                                 </div>
                             </form>
                             <!-- Alerts-->
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <strong>添加成功!</strong>
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true">×</span>
-								</button>
-                            </div>
-                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                                <strong>添加失败!</strong> 请重新检查所填信息
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true">×</span>
-								</button>
-                            </div>
+                            <div id="result_hint"></div>
                             <!-- /Alerts-->
                         </div>
                     </div>
@@ -234,13 +234,6 @@
                 </div>
             </div>
             <!-- /Main Content -->
-            <!--Copy Rights-->
-            <div class="container">
-                <div class="d-sm-flex justify-content-center">
-                    <span class="text-muted text-center d-block d-sm-inline-block">Copyright © 2018 <a href="#" target="_blank">konnectcode</a>. All rights reserved.</span> 更多模板：<a href="http://www.mycodes.net/" target="_blank">源码之家</a>
-                </div>
-            </div>
-            <!-- /Copy Rights-->
         </div>
         <!-- /Page Content -->
     </div>
@@ -250,20 +243,22 @@
     </a>
     <!-- /Back to Top -->
     <!-- Jquery Library-->
-    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="/static/js/jquery-3.2.1.min.js"></script>
     <!-- Popper Library-->
-    <script src="js/popper.min.js"></script>
+    <script src="/static/js/popper.min.js"></script>
     <!-- Bootstrap Library-->
-    <script src="js/bootstrap.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
 
     <!-- Datatable  -->
-    <script src="datatable/jquery.dataTables.min.js"></script>
-    <script src="datatable/dataTables.bootstrap4.min.js"></script>
+    <script src="/static/datatable/jquery.dataTables.min.js"></script>
+    <script src="/static/datatable/dataTables.bootstrap4.min.js"></script>
 
     <!-- Custom Script-->
-    <script src="js/custom.js"></script>
+    <script src="/static/js/custom.js"></script>
     <!-- External Script-->
-    <script src="js/distpicker.js "></script>
+    <script src="/static/js/distpicker.js "></script>
+    <!-- submit info -->
+    <script src="/static/js/info.js"></script>
 
 </body>
 

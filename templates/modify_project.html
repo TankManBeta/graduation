@@ -7,24 +7,24 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>科研信息采集与管理系统</title>
     <!-- Fav  Icon Link -->
-    <link rel="shortcut icon" type="image/png" href="images/fav.png">
+    <link rel="shortcut icon" type="image/png" href="/static/images/fav.png">
     <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
     <!-- themify icons CSS -->
-    <link rel="stylesheet" href="css/themify-icons.css">
+    <link rel="stylesheet" href="/static/css/themify-icons.css">
     <!-- Animations CSS -->
-    <link rel="stylesheet" href="css/animate.css">
+    <link rel="stylesheet" href="/static/css/animate.css">
     <!-- Main CSS -->
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/green.css" id="style_theme">
-    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/green.css" id="style_theme">
+    <link rel="stylesheet" href="/static/css/responsive.css">
     <!-- morris charts -->
-    <link rel="stylesheet" href="charts/css/morris.css">
+    <link rel="stylesheet" href="/static/charts/css/morris.css">
     <!-- jvectormap -->
-    <link rel="stylesheet" href="css/jquery-jvectormap.css">
-    <link rel="stylesheet" href="datatable/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="/static/css/jquery-jvectormap.css">
+    <link rel="stylesheet" href="/static/datatable/dataTables.bootstrap4.min.css">
 
-    <script src="js/modernizr.min.js"></script>
+    <script src="/static/js/modernizr.min.js"></script>
 </head>
 
 <body>
@@ -56,7 +56,7 @@
                 <nav class="navbar navbar-default">
                     <div class="navbar-header">
                         <div class="sidebar-header">
-                            <a href="index.html"><img src="images/logo-dark.png" class="logo" alt="logo"></a>
+                            <a href="/index"><img src="/static/images/logo-dark.png" class="logo" alt="logo"></a>
                         </div>
                     </div>
                     <ul class="nav justify-content-end">
@@ -70,8 +70,8 @@
                                 <span class="ti-user"></span>
                             </a>
                             <div class="dropdown-menu lochana-box-shadow2 profile animated flipInY">
-                                <h5>John Willing</h5>
-                                <a class="dropdown-item" href="#">
+                                <h5>{{ current_user.user_name }}</h5>
+                                <a class="dropdown-item" href="/logout">
                                     <span class="ti-power-off"></span> 退出</a>
                             </div>
                         </li>
@@ -92,31 +92,30 @@
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-home"></span> 查看科研信息</a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="index.html">查看统计信息</a>
-                                    <a class="dropdown-item" href="patients.html">查看详细信息</a>
+                                    <a class="dropdown-item" href="/index">查看统计信息</a>
+                                    <a class="dropdown-item" href="/details">查看详细信息</a>
                                 </div>
                             </li>
                             <li class="nav-item dropdown active">
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-pencil-alt"></span> 更新科研信息</a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="404.html">自动更新信息</a>
-                                    <a class="dropdown-item" href="patients_1.html">手动更新信息</a>
+                                    <a class="dropdown-item" href="/update/auto">自动更新信息</a>
+                                    <a class="dropdown-item" href="/update/manual">手动更新信息</a>
                                 </div>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-file"></span> 导出科研信息</a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="add-doctor.html">导出通用格式信息</a>
-                                    <a class="dropdown-item" href="doctors.html">导出定制格式信息</a>
+                                    <a class="dropdown-item" href="/export/common">导出通用格式信息</a>
+                                    <a class="dropdown-item" href="/export/special">导出定制格式信息</a>
                                 </div>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-user"></span> 管理个人信息</a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="add-appointment.html">修改个人信息</a>
-                                    <a class="dropdown-item" href="appointments.html">修改密码</a>
+                                    <a class="dropdown-item" href="/modify/info">修改个人信息</a>
+                                    <a class="dropdown-item" href="/modify/password">修改密码</a>
                                 </div>
-                            </li>
                             </li>
                         </ul>
                     </div>
@@ -133,7 +132,7 @@
                     <div class="col-md-6">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item">
-                                <a href="index.html">
+                                <a href="/index">
                                     <span class="ti-home"></span>
                                 </a>
                             </li>
@@ -155,71 +154,68 @@
                         <div class="widget-area-2 lochana-box-shadow">
                             <h3 class="widget-title">修改信息</h3>
                             <form>
+
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
-                                        <label for="patient-name">项目编号</label>
-                                        <input type="text" class="form-control" id="patient-name">
+                                        <label for="project_id">项目编号</label>
+                                        <input type="text" class="form-control" id="project_id" readonly="readonly" value="{{ project_data['project_id'] }}">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="project_name">项目名称</label>
+                                        <input type="text" class="form-control" id="project_name" readonly="readonly" value="{{ project_data['project_name'] }}">
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                        <label for="age">项目名称</label>
-                                        <input type="text" class="form-control" id="age">
+                                        <label for="project_source">项目来源</label>
+                                        <select class="form-control" id="project_source" disabled="disabled">
+											<option value="其他">其他</option>
+											<option value="国家自然科学基金委员会" {% if project_data['project_source']=='国家自然科学基金委员会' %}selected{% endif %}>国家自然科学基金委员会</option>
+										</select>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="project_type">项目类型</label>
+                                        <select class="form-control" id="project_type" disabled="disabled">
+                                            <option value="其他">其他</option>
+											<option value="面上项目" {% if project_data['project_type']=='面上项目' %}selected{% endif %}>面上项目</option>
+											<option value="青年科学基金项目" {% if project_data['project_type']=='青年科学基金项目' %}selected{% endif %}>青年科学基金项目</option>
+										</select>
                                     </div>
 
+
                                     <div class="form-group col-md-6">
-                                        <label for="gender">项目类型</label>
-                                        <select class="form-control" id="gender">
-											<option>实用型</option>
-											<option>发明型</option>
+                                        <label for="project_time">立项时间</label>
+                                        <input type="date" placeholder="Date of Birth" class="form-control" id="project_time" readonly="readonly" value="{{ project_data['project_time'] }}">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="project_state">项目状态</label>
+                                        <select class="form-control" id="project_state">
+											<option value="已申请" {% if project_data['project_state']=='已申请' %}selected{% endif %}>已申请</option>
+											<option value="已审核" {% if project_data['project_state']=='已审核' %}selected{% endif %}>已审核</option>
+                                            <option value="已立项" {% if project_data['project_state']=='已立项' %}selected{% endif %}>已立项</option>
+                                            <option value="已结题" {% if project_data['project_state']=='已结题' %}selected{% endif %}>已结题</option>
 										</select>
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                        <label for="gender">项目来源</label>
-                                        <select class="form-control" id="gender">
-											<option>实用型</option>
-											<option>发明型</option>
-										</select>
+                                        <label for="project_principal">项目主持人</label>
+                                        <input type="text" class="form-control" id="project_principal" value="{{ project_data['project_principal'] }}" readonly="readonly">
                                     </div>
-
                                     <div class="form-group col-md-6">
-                                        <label for="dob">立项时间</label>
-                                        <input type="date" placeholder="Date of Birth" class="form-control" id="dob">
-                                    </div>
-
-                                    <div class="form-group col-md-6">
-                                        <label for="email">项目主持人</label>
-                                        <input type="text" class="form-control" id="Email">
-                                    </div>
-
-                                    <div class="form-group col-md-6">
-                                        <label for="gender">项目状态</label>
-                                        <select class="form-control" id="gender">
-											<option>实用型</option>
-											<option>发明型</option>
+                                        <label for="project_principal_title">主持人职称</label>
+                                        <select class="form-control" id="project_principal_title">
+											<option value="教授" {% if project_data['project_principal_title']=='教授' %}selected{% endif %}>教授</option>
+											<option value="副教授" {% if project_data['project_principal_title']=='副教授' %}selected{% endif %}>副教授</option>
+                                            <option value="讲师" {% if project_data['project_principal_title']=='讲师' %}selected{% endif %}>讲师</option>
 										</select>
                                     </div>
 
                                     <div class="form-group col-md-7 mb-3">
-                                        <button type="submit" class="btn btn-primary btn-lg">提交</button>
+                                        <button type="button" class="btn btn-primary btn-lg" id="project_submit">提交</button>
                                     </div>
-
-
                                 </div>
                             </form>
                             <!-- Alerts-->
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <strong>添加成功!</strong>
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true">×</span>
-								</button>
-                            </div>
-                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                                <strong>添加失败!</strong> 请重新检查填写的信息
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true">×</span>
-								</button>
-                            </div>
+                            <div id="result_hint"></div>
                             <!-- /Alerts-->
                         </div>
                     </div>
@@ -227,13 +223,6 @@
                 </div>
             </div>
             <!-- /Main Content -->
-            <!--Copy Rights-->
-            <div class="container">
-                <div class="d-sm-flex justify-content-center">
-                    <span class="text-muted text-center d-block d-sm-inline-block">Copyright © 2018 <a href="#" target="_blank">konnectcode</a>. All rights reserved.</span> 更多模板：<a href="http://www.mycodes.net/" target="_blank">源码之家</a>
-                </div>
-            </div>
-            <!-- /Copy Rights-->
         </div>
         <!-- /Page Content -->
     </div>
@@ -243,21 +232,22 @@
     </a>
     <!-- /Back to Top -->
     <!-- Jquery Library-->
-    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="/static/js/jquery-3.2.1.min.js"></script>
     <!-- Popper Library-->
-    <script src="js/popper.min.js"></script>
+    <script src="/static/js/popper.min.js"></script>
     <!-- Bootstrap Library-->
-    <script src="js/bootstrap.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
 
     <!-- Datatable  -->
-    <script src="datatable/jquery.dataTables.min.js"></script>
-    <script src="datatable/dataTables.bootstrap4.min.js"></script>
+    <script src="/static/datatable/jquery.dataTables.min.js"></script>
+    <script src="/static/datatable/dataTables.bootstrap4.min.js"></script>
 
     <!-- Custom Script-->
-    <script src="js/custom.js"></script>
+    <script src="/static/js/custom.js"></script>
     <!-- External Script-->
-    <script src="js/distpicker.js "></script>
-
+    <script src="/static/js/distpicker.js"></script>
+    <!-- submit info -->
+    <script src="/static/js/info.js"></script>
 </body>
 
 </html>

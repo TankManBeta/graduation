@@ -111,21 +111,30 @@ $("#modify_detail").click(function () {
             patents_modify.push($(elem).attr("id"));
         });
         if (patents_modify.length !== 0){
-            $("#modify_a").attr("href", "/modify/patent");
+            $("#modify_a").attr("href", "/modify/patent/"+patents_modify[0]);
             $("#modify_a").trigger("click");
-            // let data = {
-            //     "modify_number": patents_modify[0]
-            // };
-            // $.ajax({
-            //     type: "GET",
-            //     url: "/modify/patent",
-            //     contentType: "application/json;charset=UTF-8",
-            //     data: patents_modify[0],
-            //     success() {
-            //         $("#select-all").prop("checked", false);
-            //         $("#confirm_button").click();
-            //     }
-            // })
+        }
+    }else if(is_paper === "table"){
+        let table = $("#paper_table").dataTable();
+        let paper_modify = [];
+        let checked_collection = table.$("input[type='checkbox']:checked",{"page":"all"});
+        checked_collection.each(function (index, elem) {
+            paper_modify.push($(elem).attr("id"));
+        });
+        if (paper_modify.length !== 0){
+            $("#modify_a").attr("href", "/modify/paper/"+paper_modify[0]);
+            $("#modify_a").trigger("click");
+        }
+    }else {
+        let table = $("#project_table").dataTable();
+        let project_modify = [];
+        let checked_collection = table.$("input[type='checkbox']:checked",{"page":"all"});
+        checked_collection.each(function (index, elem) {
+            project_modify.push($(elem).attr("id"));
+        });
+        if (project_modify.length !== 0){
+            $("#modify_a").attr("href", "/modify/project/"+project_modify[0]);
+            $("#modify_a").trigger("click");
         }
     }
 });

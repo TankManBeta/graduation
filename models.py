@@ -142,17 +142,19 @@ class Patent(db.Model):
     patent_id = db.Column(db.String(128), nullable=False)
     patent_name = db.Column(db.String(128), nullable=False)
     patent_owner = db.Column(db.String(128), nullable=True)
+    patent_inventors = db.Column(db.String(128), nullable=True)
     patent_time = db.Column(db.Date, nullable=True)
     patent_state = db.Column(db.String(128), nullable=True)
     patent_type = db.Column(db.String(128), nullable=True)
 
-    def __init__(self, patent_id, patent_name, patent_owner, patent_time, patent_state, patent_type):
+    def __init__(self, patent_id, patent_name, patent_owner, patent_time, patent_state, patent_type, patent_inventors):
         self.patent_id = patent_id
         self.patent_name = patent_name
         self.patent_owner = patent_owner
         self.patent_time = patent_time
         self.patent_state = patent_state
         self.patent_type = patent_type
+        self.patent_inventors = patent_inventors
 
     def __repr__(self):
         return "<Patent %r %r>" % (self.patent_id, self.patent_name)

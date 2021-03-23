@@ -87,7 +87,7 @@ $("#confirm_button").click(function () {
                     "lengthMenu": [5, 10, 15, 20, 25],
                     "bAutoWidth": false
                 });
-                let paper_headers = ["论文编号", "论文名称", "论文来源", "发表时间", "机构地区", "关键词", "刊登信息", "检索类型", "被引量", "影响因子", "检索类型", "doi号", "论文状态"];
+                let paper_headers = ["论文编号", "论文名称", "论文来源", "发表时间", "机构地区", "关键词", "刊登信息", "检索类型", "被引量", "影响因子", "doi号", "论文状态"];
                 $("#left>div").remove();
                 $("#right>div").remove();
                 for (let i=0; i<paper_headers.length; i++){
@@ -175,45 +175,66 @@ $("#export_some").click(function () {
     if (is_patent === "table"){
         let table = $("#patent_table").dataTable();
         let patents_export = [];
+        let patents_header = [];
         let checked_collection = table.$("input[type='checkbox']:checked",{"page":"all"});
         checked_collection.each(function (index, elem) {
             patents_export.push($(elem).attr("id"));
         });
+        $("#right>div").each(function (i, item) {
+            patents_header.push($(item).text())
+        });
         data["export_type"] = 0;
-        data["export_number"] = patents_export
+        data["export_number"] = patents_export;
+        data["export_header"] = patents_header
     } else if (is_paper === "table"){
         let table = $("#paper_table").dataTable();
         let papers_export = [];
+        let papers_header = [];
         let checked_collection = table.$("input[type='checkbox']:checked",{"page":"all"});
         checked_collection.each(function (index, elem) {
             papers_export.push($(elem).attr("id"));
         });
+        $("#right>div").each(function (i, item) {
+            papers_header.push($(item).text())
+        });
         data["export_type"] = 1;
-        data["export_number"] = papers_export
+        data["export_number"] = papers_export;
+        data["export_header"] = papers_header
     } else{
         let table = $("#project_table").dataTable();
         let projects_export = [];
+        let projects_header = [];
         let checked_collection = table.$("input[type='checkbox']:checked",{"page":"all"});
         checked_collection.each(function (index, elem) {
             projects_export.push($(elem).attr("id"));
         });
+        $("#right>div").each(function (i, item) {
+            projects_header.push($(item).text())
+        });
         data["export_type"] = 2;
-        data["export_number"] = projects_export
+        data["export_number"] = projects_export;
+        data["export_header"] = projects_header
     }
     $.ajax({
         type: "POST",
-        url: "/export/some",
+        url: window.location.pathname,
         contentType: "application/json;charset=UTF-8",
         data:JSON.stringify(data),
-        responseType: "blob",
-        success(res) {
-            alert("asdasd");
-            if (res.ok){
-                const res_data = res.blob();
-                console.log(res_data)
+        xhrFields:{
+            responseType: 'blob'
+        },
+        success(res, status, xhr) {
+            if (res){
+                let parse_data = new Blob([res]);
+                let download_url = window.URL.createObjectURL(parse_data);
+                let filename = xhr.getResponseHeader("filename");
+                let link = document.createElement('a');
+                link.href = download_url;
+                link.download = filename;
+                link.click();
             }
             $("#select-all").prop("checked", false);
-            $("#confirm_button").click();
+            $("#confirm_button").click()
         }
     })
 });
@@ -226,39 +247,66 @@ $("#export_all").click(function () {
     if (is_patent === "table"){
         let table = $("#patent_table").dataTable();
         let patents_export = [];
+        let patents_header = [];
         let checked_collection = table.$("input[type='checkbox']",{"page":"all"});
         checked_collection.each(function (index, elem) {
             patents_export.push($(elem).attr("id"));
         });
+        $("#right>div").each(function (i,item) {
+            patents_header.push($(item).text())
+        });
         data["export_type"] = 0;
-        data["export_number"] = patents_export
+        data["export_number"] = patents_export;
+        data["export_header"] = patents_header
     } else if (is_paper === "table"){
         let table = $("#paper_table").dataTable();
         let papers_export = [];
+        let papers_header = [];
         let checked_collection = table.$("input[type='checkbox']",{"page":"all"});
         checked_collection.each(function (index, elem) {
             papers_export.push($(elem).attr("id"));
         });
+        $("#right>div").each(function (i, item) {
+            papers_header.push($(item).text())
+        });
         data["export_type"] = 1;
-        data["export_number"] = papers_export
+        data["export_number"] = papers_export;
+        data["export_header"] = papers_header
     } else{
         let table = $("#project_table").dataTable();
         let projects_export = [];
+        let projects_header = [];
         let checked_collection = table.$("input[type='checkbox']",{"page":"all"});
         checked_collection.each(function (index, elem) {
             projects_export.push($(elem).attr("id"));
         });
-        data["export_type"] = 0;
-        data["export_number"] = projects_export
+        $("#right>div").each(function (i, item) {
+            projects_header.push($(item).text())
+        });
+        data["export_type"] = 2;
+        data["export_number"] = projects_export;
+        data["export_header"] = projects_header
     }
     $.ajax({
         type: "POST",
-        url: "/export/all",
+        url: window.location.pathname,
         contentType: "application/json;charset=UTF-8",
         data:JSON.stringify(data),
-        success() {
+        xhrFields:{
+            responseType: 'blob'
+        },
+        success(res, status, xhr) {
+            if (res){
+                let parse_data = new Blob([res]);
+                let download_url = window.URL.createObjectURL(parse_data);
+                let filename = xhr.getResponseHeader("filename");
+                let link = document.createElement('a');
+                link.href = download_url;
+                link.download = filename;
+                link.click();
+            }
             $("#select-all").prop("checked", false);
-            $("#confirm_button").click();
+            $("#confirm_button").click()
         }
     })
 });

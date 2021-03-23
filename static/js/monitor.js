@@ -206,7 +206,7 @@ $("#delete_button").click(function () {
             data:JSON.stringify(data),
             success() {
                 $("#select-all").prop("checked", false);
-                $("#confirm_button").click();
+                $("#confirm_button").click()
             }
         })
     }

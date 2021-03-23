@@ -160,12 +160,16 @@ class PatentCrawler:
                             ('/html/body/div[2]/div/div[1]/div[1]/div/div[2]/div[1]/h1').text
                         inventors = browser.find_element_by_xpath("//span[text()='发明人：']/following-sibling::p").text
                         inventors = re.sub(' ', '', inventors)
+                        # 获取所有的发明人
+                        inventors_copy = inventors
+                        # 获取发明人的排名
                         inventors = inventors.split(';')
                         patent_data = {
                             "patent_id": patent_id,
                             "patent_name": patent_name,
                             "patent_type": patent_type,
                             "patent_time": patent_time,
+                            "patent_inventors": inventors_copy,
                             "inventor_rank": inventors.index(self.name)
                         }
                         all_items.append(patent_data)

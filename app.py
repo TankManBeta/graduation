@@ -8,6 +8,7 @@ from utils import PaperCrawler, PatentCrawler, ProjectCrawler, MyTimer, split_wo
 from dateutil.parser import parse
 from datetime import datetime
 from werkzeug.security import generate_password_hash
+from urllib.parse import quote
 
 app = Flask(__name__)
 app.config.from_object(settings)
@@ -1058,16 +1059,69 @@ def export_special():
                                                                Patent.patent_time, Patent.patent_state).all()
         patent_headers = ["专利权人", "发明人", "专利号", "专利名称", "专利状态", "时间", "专利类型"]
         return render_template("special_export.html", patent_data=patent_data, patent_headers=patent_headers)
-
-
-@app.route("/export/some", methods=["GET", "POST"])
-@login_required
-def export_some():
     if request.method == "POST":
         data = request.get_json()
-        res = make_response(send_from_directory("D:\\test", "学生评价值导入模板.xls", as_attachment=True))
+        print(data)
+        # 需要导出的信息项
+        optional_headers = data["export_header"]
+        # 需要导出的编号
+        export_lists = data["export_number"]
+        # 导出专利信息
+        if data["export_type"] == 0:
+            headers = ["专利权人", "发明人", "专利号", "专利名称", "专利状态", "时间", "专利类型"]
+            # 用于存放最后的结果
+            data_list = []
+            # 选择了需要导出的项
+            if len(export_lists) != 0:
+                # 筛选所有信息
+                for i in export_lists:
+                    source_data = db.session.query(Patent).filter(Patent.id == i).with_entities(
+                        Patent.patent_owner, Patent.patent_inventors, Patent.patent_id, Patent.patent_name,
+                        Patent.patent_state, Patent.patent_time, Patent.patent_state).first()
+                    # 转化时间
+                    new_data = [source_data[0], source_data[1], source_data[2], source_data[3], source_data[4],
+                                source_data[5].strftime('%Y-%m-%d'), source_data[6]]
+                    # 导出所有项
+                    if len(optional_headers) == 0:
+                        data_list.append(new_data)
+                    # 导出指定项
+                    else:
+                        final_data = []
+                        for item in optional_headers:
+                            # 需要哪一项就取第几个
+                            final_data.append(new_data[headers.index(item)])
+                        data_list.append(final_data)
+        # 导出论文信息
+        elif data["export_type"] == 1:
+            headers = ["论文编号", "论文名称", "论文来源", "发表时间", "机构地区", "关键词", "刊登信息", "检索类型", "被引量", "影响因子", "doi号", "论文状态"]
+            # 用于存放最后的结果
+            data_list = []
+            if len(export_lists) != 0:
+                for i in export_lists:
+                    source_data = db.session.query(Paper).filter(Paper.id == i).with_entities(
+                        Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time, Paper.paper_region,
+                        Paper.paper_keywords, Paper.paper_press, Paper.paper_search_type, Paper.paper_quote,
+                        Paper.paper_influence, Paper.paper_influence, Paper.paper_state).first()
+                    # 转化时间
+                    new_data = [source_data[0], source_data[1], source_data[2], source_data[3].strftime("%Y-%m-%d"),
+                                source_data[4], source_data[5], source_data[6], source_data[7], source_data[8],
+                                source_data[9], source_data[10], source_data[11]]
+                    # 导出所有项
+                    if len(optional_headers) == 0:
+                        data_list.append(new_data)
+                    # 导出指定项
+                    else:
+                        final_data = []
+                        for item in optional_headers:
+                            # 需要哪一项就取第几个
+                            final_data.append(new_data[headers.index(item)])
+                        data_list.append(final_data)
+        # 导出项目信息
+        else:
+            pass
+        res = make_response(send_from_directory(".\\files", "学生评价值导入模板.xls"))
         res.headers['Content-Type'] = 'text/plain;charset=UTF-8'
-        res.headers['fileName'] = "学生评价值导入模板.xls".encode("utf-8")
+        res.headers['filename'] = quote("学生评价值导入模板.xls".encode("utf-8"))
         return res
 
 
@@ -1078,7 +1132,10 @@ def update_info(interval, name, address, user_id, inform):
         get_projects(name, address, user_id, inform)
         get_papers(name, address, user_id, inform)
         get_patents(name, address, user_id, inform)
+        timer1 = MyTimer(user_id, interval, update_info, (interval, name, address, user_id, inform))
+        timer1.start()
     except:
+        timer1.cancel()
         timer1 = MyTimer(user_id, interval, update_info, (interval, name, address, user_id, inform))
         timer1.start()
 
@@ -1158,6 +1215,7 @@ def get_patents(name, address, user_id, inform):
         patent_name = item["patent_name"]
         patent_type = item["patent_type"]
         patent_time = item["patent_time"]
+        patent_inventors = item["patent_inventors"]
         patent_time = parse(patent_time)
         inventor_rank = item["inventor_rank"]
         patent_state = '已' + patent_type[2:]
@@ -1165,10 +1223,10 @@ def get_patents(name, address, user_id, inform):
         patent_in = db.session.query(Patent).filter(Patent.patent_id == patent_id, Patent.patent_type ==
                                                     patent_type).with_entities(
             Patent.patent_id, Patent.patent_name, Patent.patent_owner, Patent.patent_time, Patent.patent_state,
-            Patent.patent_type).all()
+            Patent.patent_type, Patent.patent_inventors).all()
         # 不存在就加入
         if len(patent_in) == 0:
-            patent = Patent(patent_id, patent_name, address, patent_time, patent_state, patent_type)
+            patent = Patent(patent_id, patent_name, address, patent_time, patent_state, patent_type, patent_inventors)
             db.session.add(patent)
             db.session.commit()
             new_info = "yes"
@@ -1180,16 +1238,18 @@ def get_patents(name, address, user_id, inform):
                                                                                     Patent.patent_owner,
                                                                                     Patent.patent_time,
                                                                                     Patent.patent_state,
-                                                                                    Patent.patent_type).first()
+                                                                                    Patent.patent_type,
+                                                                                    Patent.patent_inventors).first()
             # 对比是否有不同的信息
             if exist_data[0] != patent_id or exist_data[1] != patent_name or exist_data[2] != address or \
-                    exist_data[3] != patent_time or exist_data[4] != patent_state or exist_data[5] != patent_type:
+                exist_data[3] != patent_time or exist_data[4] != patent_state or exist_data[5] != patent_type or \
+                    exist_data[6] != patent_inventors:
                 in_data = db.session.query(Patent).filter(Patent.patent_id == patent_id, Patent.patent_type ==
                                                           patent_type).first()
                 db.session.delete(in_data)
                 db.session.commit()
                 patent_state = '已' + patent_type[2:]
-                patent = Patent(patent_id, patent_name, address, patent_time, patent_state, patent_type)
+                patent = Patent(patent_id, patent_name, address, patent_time, patent_state, patent_type, patent_inventors)
                 db.session.add(patent)
                 db.session.commit()
                 new_info = "yes"
@@ -1268,7 +1328,7 @@ def get_projects(name, address, user_id, inform):
     if inform == "yes" and new_info == "yes":
         app.app_context().push()
         account = db.session.query(User).filter(User.user_id == user_id).with_entities(User.email).first()[0]
-        message = Message('科研信息管理系统', recipients=[account], body='您的专利信息有更新')
+        message = Message('科研信息管理系统', recipients=[account], body='您的项目信息有更新')
         mail.send(message)
     print("获取项目信息成功")
 

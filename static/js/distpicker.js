@@ -43,11 +43,11 @@
     // Select value. Options: 'name' and 'code'
     valueType: 'name',
     // Defines the initial value of province.
-    province: '—— 省 ——',
+    province: '省',
     // Defines the initial value of city.
-    city: '—— 市 ——',
+    city: '市',
     // Defines the initial value of district.
-    district: '—— 区 ——'
+    district: '区/县'
   };
 
   var DISTRICTS = {

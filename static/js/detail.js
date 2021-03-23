@@ -138,3 +138,19 @@ $("#modify_detail").click(function () {
         }
     }
 });
+
+$("#add_detail").click(function () {
+    let is_patent = $("#patent_table").css("display");
+    let is_paper = $("#paper_table").css("display");
+    let is_project = $("#project_table").css("display");
+    if (is_patent === "table"){
+        $("#add_a").attr("href", "/add/patent");
+        $("#add_a").trigger("click")
+    }else if(is_paper === "table"){
+        $("#add_a").attr("href", "/add/paper");
+        $("#add_a").trigger("click")
+    }else {
+        $("#add_a").attr("href", "/add/project");
+        $("#add_a").trigger("click")
+    }
+});

@@ -156,34 +156,31 @@
                             <form>
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
-                                        <label for="patient-name">专利编号</label>
+                                        <label for="patent_id">专利编号</label>
                                         <input type="text" class="form-control" id="patent_id" value="{{ patent_data['patent_id'] }}" readonly="readonly">
                                     </div>
-
                                     <div class="form-group col-md-6">
-                                        <label for="age">专利名称</label>
+                                        <label for="patent_name">专利名称</label>
                                         <input type="text" class="form-control" id="patent_name" value="{{ patent_data['patent_name'] }}" readonly="readonly">
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                        <label for="gender">专利类型</label>
+                                        <label for="patent_type">专利类型</label>
                                         <select class="form-control" id="patent_type" disabled="disabled">
 											<option value="{{ patent_data['patent_type'] }}">{{ patent_data['patent_type'] }}</option>
 										</select>
                                     </div>
-
                                     <div class="form-group col-md-6">
-                                        <label for="dob">申请日期</label>
+                                        <label for="patent_time">申请日期</label>
                                         <input type="date" class="form-control" id="patent_time" value="{{ patent_data['patent_time'] }}" readonly="readonly">
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                        <label for="email">专利权人</label>
+                                        <label for="patent_owner">专利权人</label>
                                         <input type="text" class="form-control" id="patent_owner" value="{{ patent_data['patent_owner'] }}" readonly="readonly">
                                     </div>
-
                                     <div class="form-group col-md-6">
-                                        <label for="gender">专利状态</label>
+                                        <label for="patent_state">专利状态</label>
                                         <select class="form-control" id="patent_state">
 											<option value="已申请" {% if patent_data['patent_state'] == "已申请" %}selected{% endif %}>已申请</option>
 											<option value="已受理" {% if patent_data['patent_state'] == "已受理" %}selected{% endif %}>已受理</option>
@@ -191,6 +188,20 @@
                                             <option value="已授权" {% if patent_data['patent_state'] == "已授权" %}selected{% endif %}>已授权</option>
                                             <option value="已公开" {% if patent_data['patent_state'] == "已公开" %}selected{% endif %}>已公开</option>
 										</select>
+                                    </div>
+
+                                    <div class="form-group col-md-6">
+                                        <label for="inventor_rank">发明人类型</label>
+                                        <select class="form-control" id="inventor_rank">
+                                            <option value="4" {% if patent_data['inventor_rank'] >= 4 %}selected{% endif %}>其他</option>
+											<option value="0" {% if patent_data['inventor_rank'] == 0 %}selected{% endif %}>第一发明人</option>
+											<option value="1" {% if patent_data['inventor_rank'] == 1 %}selected{% endif %}>第二发明人</option>
+                                            <option value="2" {% if patent_data['inventor_rank'] == 2 %}selected{% endif %}>第三发明人</option>
+                                            <option value="3" {% if patent_data['inventor_rank'] == 3 %}selected{% endif %}>第四发明人</option>
+										</select>
+                                    </div>
+                                    <div class="form-group col-md-6">
+
                                     </div>
 
                                     <div class="form-group col-md-6 mb-3">

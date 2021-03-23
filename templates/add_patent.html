@@ -7,24 +7,24 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>科研信息采集与管理系统</title>
     <!-- Fav  Icon Link -->
-    <link rel="shortcut icon" type="image/png" href="images/fav.png">
+    <link rel="shortcut icon" type="image/png" href="/static/images/fav.png">
     <!-- Bootstrap core CSS -->
-    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
     <!-- themify icons CSS -->
-    <link rel="stylesheet" href="css/themify-icons.css">
+    <link rel="stylesheet" href="/static/css/themify-icons.css">
     <!-- Animations CSS -->
-    <link rel="stylesheet" href="css/animate.css">
+    <link rel="stylesheet" href="/static/css/animate.css">
     <!-- Main CSS -->
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/green.css" id="style_theme">
-    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/green.css" id="style_theme">
+    <link rel="stylesheet" href="/static/css/responsive.css">
     <!-- morris charts -->
-    <link rel="stylesheet" href="charts/css/morris.css">
+    <link rel="stylesheet" href="/static/charts/css/morris.css">
     <!-- jvectormap -->
-    <link rel="stylesheet" href="css/jquery-jvectormap.css">
-    <link rel="stylesheet" href="datatable/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" href="/static/css/jquery-jvectormap.css">
+    <link rel="stylesheet" href="/static/datatable/dataTables.bootstrap4.min.css">
 
-    <script src="js/modernizr.min.js"></script>
+    <script src="/static/js/modernizr.min.js"></script>
 </head>
 
 <body>
@@ -56,7 +56,7 @@
                 <nav class="navbar navbar-default">
                     <div class="navbar-header">
                         <div class="sidebar-header">
-                            <a href="index.html"><img src="images/logo-dark.png" class="logo" alt="logo"></a>
+                            <a href="/index"><img src="/static/images/logo-dark.png" class="logo" alt="logo"></a>
                         </div>
                     </div>
                     <ul class="nav justify-content-end">
@@ -70,8 +70,8 @@
                                 <span class="ti-user"></span>
                             </a>
                             <div class="dropdown-menu lochana-box-shadow2 profile animated flipInY">
-                                <h5>John Willing</h5>
-                                <a class="dropdown-item" href="#">
+                                <h5>{{ current_user.user_name }}</h5>
+                                <a class="dropdown-item" href="/logout">
                                     <span class="ti-power-off"></span> 退出</a>
                             </div>
                         </li>
@@ -92,31 +92,30 @@
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-home"></span> 查看科研信息</a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="index.html">查看统计信息</a>
-                                    <a class="dropdown-item" href="patients.html">查看详细信息</a>
+                                    <a class="dropdown-item" href="/index">查看统计信息</a>
+                                    <a class="dropdown-item" href="/details">查看详细信息</a>
                                 </div>
                             </li>
                             <li class="nav-item dropdown active">
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-pencil-alt"></span> 更新科研信息</a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="404.html">自动更新信息</a>
-                                    <a class="dropdown-item" href="patients_1.html">手动更新信息</a>
+                                    <a class="dropdown-item" href="/update/auto">自动更新信息</a>
+                                    <a class="dropdown-item" href="/update/manual">手动更新信息</a>
                                 </div>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-file"></span> 导出科研信息</a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="add-doctor.html">导出通用格式信息</a>
-                                    <a class="dropdown-item" href="doctors.html">导出定制格式信息</a>
+                                    <a class="dropdown-item" href="/export/common">导出通用格式信息</a>
+                                    <a class="dropdown-item" href="/export/special">导出定制格式信息</a>
                                 </div>
                             </li>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-user"></span> 管理个人信息</a>
                                 <div class="dropdown-menu">
-                                    <a class="dropdown-item" href="add-appointment.html">修改个人信息</a>
-                                    <a class="dropdown-item" href="appointments.html">修改密码</a>
+                                    <a class="dropdown-item" href="/modify/info">修改个人信息</a>
+                                    <a class="dropdown-item" href="/modify/password">修改密码</a>
                                 </div>
-                            </li>
                             </li>
                         </ul>
                     </div>
@@ -133,7 +132,7 @@
                     <div class="col-md-6">
                         <ol class="breadcrumb">
                             <li class="breadcrumb-item">
-                                <a href="index.html">
+                                <a href="/index">
                                     <span class="ti-home"></span>
                                 </a>
                             </li>
@@ -153,64 +152,64 @@
                     <!-- Widget Item -->
                     <div class="col-md-12">
                         <div class="widget-area-2 lochana-box-shadow">
-                            <h3 class="widget-title">新增信息</h3>
+                            <h3 class="widget-title">新增专利信息</h3>
                             <form>
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
-                                        <label for="patient-name">专利编号</label>
-                                        <input type="text" class="form-control" id="patient-name">
+                                        <label for="patent_id">专利编号</label>
+                                        <input type="text" class="form-control" id="patent_id">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="patent_name">专利名称</label>
+                                        <input type="text" class="form-control" id="patent_name">
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                        <label for="age">专利名称</label>
-                                        <input type="text" class="form-control" id="age">
+                                        <label for="patent_type">专利类型</label>
+                                        <select class="form-control" id="patent_type">
+											<option value="发明授权">发明授权</option>
+                                            <option value="发明公开">发明公开</option>
+										</select>
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="patent_time">申请日期</label>
+                                        <input type="date" class="form-control" id="patent_time">
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                        <label for="gender">专利类型</label>
-                                        <select class="form-control" id="gender">
-											<option>实用型</option>
-											<option>发明型</option>
+                                        <label for="patent_owner">专利权人</label>
+                                        <input type="text" class="form-control" id="patent_owner">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="patent_state">专利状态</label>
+                                        <select class="form-control" id="patent_state">
+											<option value="已申请" >已申请</option>
+											<option value="已受理" >已受理</option>
+                                            <option value="已审核" >已审核</option>
+                                            <option value="已授权" >已授权</option>
+                                            <option value="已公开" >已公开</option>
 										</select>
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                        <label for="dob">申请日期</label>
-                                        <input type="date" placeholder="Date of Birth" class="form-control" id="dob">
-                                    </div>
-
-                                    <div class="form-group col-md-6">
-                                        <label for="email">专利权人</label>
-                                        <input type="text" class="form-control" id="Email">
-                                    </div>
-
-                                    <div class="form-group col-md-6">
-                                        <label for="gender">专利状态</label>
-                                        <select class="form-control" id="gender">
-											<option>受理中</option>
-											<option>已申请</option>
-                                            <option>已授权</option>
+                                        <label for="inventor_rank">发明人类型</label>
+                                        <select class="form-control" id="inventor_rank">
+											<option value="0">第一发明人</option>
+											<option value="1">第二发明人</option>
+                                            <option value="2">第三发明人</option>
+                                            <option value="3">第四发明人</option>
+                                            <option value="4">其他</option>
 										</select>
                                     </div>
+                                    <div class="form-group col-md-6"></div>
 
                                     <div class="form-group col-md-6 mb-3">
-                                        <button type="submit" class="btn btn-primary btn-lg">提交</button>
+                                        <button type="button" class="btn btn-primary btn-lg" id="new_patent_submit">提交</button>
                                     </div>
                                 </div>
                             </form>
                             <!-- Alerts-->
-                            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <strong>添加成功!</strong>
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true">×</span>
-								</button>
-                            </div>
-                            <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                                <strong>添加失败!</strong> 请重新检查填写的信息
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-									<span aria-hidden="true">×</span>
-								</button>
-                            </div>
+                            <div id="new_result_hint"></div>
                             <!-- /Alerts-->
                         </div>
                     </div>
@@ -218,13 +217,6 @@
                 </div>
             </div>
             <!-- /Main Content -->
-            <!--Copy Rights-->
-            <div class="container">
-                <div class="d-sm-flex justify-content-center">
-                    <span class="text-muted text-center d-block d-sm-inline-block">Copyright © 2018 <a href="#" target="_blank">konnectcode</a>. All rights reserved.</span> 更多模板：<a href="http://www.mycodes.net/" target="_blank">源码之家</a>
-                </div>
-            </div>
-            <!-- /Copy Rights-->
         </div>
         <!-- /Page Content -->
     </div>
@@ -234,20 +226,22 @@
     </a>
     <!-- /Back to Top -->
     <!-- Jquery Library-->
-    <script src="js/jquery-3.2.1.min.js"></script>
+    <script src="/static/js/jquery-3.2.1.min.js"></script>
     <!-- Popper Library-->
-    <script src="js/popper.min.js"></script>
+    <script src="/static/js/popper.min.js"></script>
     <!-- Bootstrap Library-->
-    <script src="js/bootstrap.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
 
     <!-- Datatable  -->
-    <script src="datatable/jquery.dataTables.min.js"></script>
-    <script src="datatable/dataTables.bootstrap4.min.js"></script>
+    <script src="/static/datatable/jquery.dataTables.min.js"></script>
+    <script src="/static/datatable/dataTables.bootstrap4.min.js"></script>
 
     <!-- Custom Script-->
-    <script src="js/custom.js"></script>
+    <script src="/static/js/custom.js"></script>
     <!-- External Script-->
-    <script src="js/distpicker.js "></script>
+    <script src="/static/js/distpicker.js"></script>
+    <!-- submit info -->
+    <script src="/static/js/add-info.js"></script>
 
 </body>
 

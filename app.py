@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for, redirect, session, jsonify
+from flask import Flask, render_template, request, url_for, redirect, session, jsonify, make_response, send_from_directory
 from flask_login import LoginManager, login_user, login_required, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Message, Mail
@@ -7,6 +7,7 @@ import settings, random, re, threading
 from utils import PaperCrawler, PatentCrawler, ProjectCrawler, MyTimer, split_words
 from dateutil.parser import parse
 from datetime import datetime
+from werkzeug.security import generate_password_hash
 
 app = Flask(__name__)
 app.config.from_object(settings)
@@ -127,9 +128,8 @@ def register():
                         user.user_id = str(user.id + 20210000)
                         db.session.commit()
                         # 存储用户信息
-                        address1_detail = province1 + city1 + district1 + address1
-                        address2_detail = province2 + city2 + district2 + address2
-                        user_info = Info(name, user.user_id, email, address1_detail, address2_detail, title)
+                        user_info = Info(name, user.user_id, email, province1, city1, district1, address1, province2,
+                                         city2, district2, address2, title)
                         db.session.add(user_info)
                         db.session.commit()
                         success = "注册成功！您的账号为{}，前往".format(user.user_id)
@@ -638,10 +638,12 @@ def update_auto():
             Info.name, Info.address1, Info.address2, Info.user_id).first()
         name = user_data[0]
         address1 = user_data[1]
-        address1 = split_words(address1)[3]
+        # address1 = split_words(address1)[3]
+        address1 = split_words(address1)[0]
         address2 = user_data[2]
         if address2 != '':
-            address2 = split_words(address2)[3]
+            address2 = split_words(address2)[0]
+            # address2 = split_words(address2)[3]
             timer1 = MyTimer(current_user.user_id, interval, update_info, (name, address1, user_data[3], is_inform))
             timer2 = MyTimer(current_user.user_id, interval, update_info, (name, address2, user_data[3], is_inform))
             # 启动定时任务
@@ -665,307 +667,6 @@ def update_manual():
                                                                Patent.patent_type, Patent.patent_owner,
                                                                Patent.patent_time, Patent.patent_state).all()
         return render_template("details_3.html", patent_data=patent_data)
-    if request.method == "POST":
-        data = request.get_json()
-        info_type = data["info_type"]
-        info_state = data["info_state"]
-        start_date = data["start_date"]
-        end_date = data["end_date"]
-        # 全为空或全部不合法
-        if start_date == "" and end_date == "":
-            date_state = 0
-        # 两者全都合法
-        elif start_date != "" and end_date != "":
-            date_state = 1
-            # 按时间先后排序
-            start = parse(start_date)
-            end = parse(end_date)
-            start_date = start if (start < end) else end
-            end_date = end if (start < end) else start
-        else:
-            # 截止日期合法
-            if start_date == "":
-                date_state = 2
-                end_date = parse(end_date)
-            # 开始日期合法
-            else:
-                date_state = 3
-                start_date = parse(start_date)
-        # 如果要获取专利信息
-        if info_type == "专利":
-            # 获取全部信息
-            if info_state == "全部":
-                # 日期全部不合法则显示所有信息
-                if date_state == 0:
-                    patents = db.session.query(Patent, Apply).filter \
-                        (Apply.teacher_id == current_user.user_id, Apply.patent_id == Patent.patent_id,
-                         Patent.patent_type == Apply.patent_type).with_entities \
-                        (Patent.id, Patent.patent_id, Patent.patent_name, Patent.patent_type, Patent.patent_owner,
-                         Patent.patent_time, Patent.patent_state).all()
-                # 日期都合法
-                elif date_state == 1:
-                    patents = db.session.query(Patent, Apply).filter \
-                        (Apply.teacher_id == current_user.user_id, Apply.patent_id == Patent.patent_id,
-                         Patent.patent_type == Apply.patent_type, Patent.patent_time > start_date,
-                         Patent.patent_time < end_date).with_entities(Patent.id, Patent.patent_id,
-                                                                      Patent.patent_name, Patent.patent_type,
-                                                                      Patent.patent_owner, Patent.patent_time,
-                                                                      Patent.patent_state).all()
-                # 截止日期合法
-                elif date_state == 2:
-                    patents = db.session.query(Patent, Apply).filter \
-                        (Apply.teacher_id == current_user.user_id, Apply.patent_id == Patent.patent_id,
-                         Patent.patent_type == Apply.patent_type, Patent.patent_time < end_date).with_entities \
-                        (Patent.id, Patent.patent_id, Patent.patent_name, Patent.patent_type, Patent.patent_owner,
-                         Patent.patent_time, Patent.patent_state).all()
-                # 开始日期合法
-                else:
-                    patents = db.session.query(Patent, Apply).filter \
-                        (Apply.teacher_id == current_user.user_id, Apply.patent_id == Patent.patent_id,
-                         Patent.patent_type == Apply.patent_type, Patent.patent_time > start_date).with_entities \
-                        (Patent.id, Patent.patent_id, Patent.patent_name, Patent.patent_type, Patent.patent_owner,
-                         Patent.patent_time, Patent.patent_state).all()
-            # 获取某个状态的专利信息
-            else:
-                # 日期都不合法显示所有信息
-                if date_state == 0:
-                    patents = db.session.query(Patent, Apply).filter \
-                        (Apply.teacher_id == current_user.user_id, Apply.patent_id == Patent.patent_id,
-                         Patent.patent_type == Apply.patent_type, Patent.patent_state == info_state).with_entities \
-                        (Patent.id, Patent.patent_id, Patent.patent_name, Patent.patent_type, Patent.patent_owner,
-                         Patent.patent_time, Patent.patent_state).all()
-                # 日期全部合法
-                elif date_state == 1:
-                    patents = db.session.query(Patent, Apply).filter \
-                        (Apply.teacher_id == current_user.user_id, Apply.patent_id == Patent.patent_id,
-                         Patent.patent_type == Apply.patent_type, Patent.patent_state == info_state,
-                         Patent.patent_time > start_date, Patent.patent_time < end_date).with_entities \
-                        (Patent.id, Patent.patent_id, Patent.patent_name, Patent.patent_type, Patent.patent_owner,
-                         Patent.patent_time, Patent.patent_state).all()
-                # 截止日期合法
-                elif date_state == 2:
-                    patents = db.session.query(Patent, Apply).filter \
-                        (Apply.teacher_id == current_user.user_id, Apply.patent_id == Patent.patent_id,
-                         Patent.patent_type == Apply.patent_type, Patent.patent_state == info_state,
-                         Patent.patent_time < end_date).with_entities(Patent.id, Patent.patent_id, Patent.patent_name,
-                                                                      Patent.patent_type, Patent.patent_owner,
-                                                                      Patent.patent_time, Patent.patent_state).all()
-                # 开始日期合法
-                else:
-                    patents = db.session.query(Patent, Apply).filter \
-                        (Apply.teacher_id == current_user.user_id, Apply.patent_id == Patent.patent_id,
-                         Patent.patent_type == Apply.patent_type, Patent.patent_state == info_state,
-                         Patent.patent_time > start_date).with_entities(Patent.id, Patent.patent_id, Patent.patent_name,
-                                                                        Patent.patent_type, Patent.patent_owner,
-                                                                        Patent.patent_time, Patent.patent_state).all()
-            show_html = ''
-            for patent in patents:
-                show_html += '<tr><td><div class="custom-control custom-checkbox"><input class="custom-control-input" ' \
-                             'type="checkbox" id="' + str(patent[0]) + '"><label class="custom-control-label" for="' \
-                             + str(patent[0]) + '"></label></div></td><td>' + patent[1] + '</td><td>' + patent[2] + \
-                             '</td><td>' + patent[3] + '</td><td>' + patent[4] + '</td><td>' + \
-                             patent[5].strftime('%Y-%m-%d') + '</td><td>'
-                if patent[6] == "已公开":
-                    show_html += '<span class="badge badge-success">' + patent[6] + '</span></td>' + '</tr>'
-                if patent[6] == "已授权":
-                    show_html += '<span class="badge badge-info">' + patent[6] + '</span></td>' + '</tr>'
-                if patent[6] == "已申请":
-                    show_html += '<span class="badge badge-primary">' + patent[6] + '</span></td>' + '</tr>'
-                if patent[6] == "已受理":
-                    show_html += '<span class="badge badge-secondary">' + patent[6] + '</span></td>' + '</tr>'
-                if patent[6] == "已审核":
-                    show_html += '<span class="badge badge-warning">' + patent[6] + '</span></td>' + '</tr>'
-            table_data = {
-                "type": 0,
-                "html": show_html
-            }
-            return jsonify(table_data)
-        # 获取论文信息
-        elif info_type == "论文":
-            if info_state == "全部":
-                # 日期全部不合法则显示所有信息
-                if date_state == 0:
-                    papers = db.session.query(Paper, Deliver).filter(current_user.user_id == Deliver.teacher_id,
-                                                                     Deliver.paper_id == Paper.paper_id).with_entities(
-                        Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
-                        Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
-                # 日期都合法
-                elif date_state == 1:
-                    papers = db.session.query(Paper, Deliver).filter(current_user.user_id == Deliver.teacher_id,
-                                                                     Deliver.paper_id == Paper.paper_id,
-                                                                     Paper.paper_time < end_date,
-                                                                     Paper.paper_time > start_date).with_entities(
-                        Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
-                        Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
-                # 截止日期合法
-                elif date_state == 2:
-                    papers = db.session.query(Paper, Deliver).filter(current_user.user_id == Deliver.teacher_id,
-                                                                     Deliver.paper_id == Paper.paper_id,
-                                                                     Paper.paper_time < end_date).with_entities(
-                        Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
-                        Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
-                # 开始日期合法
-                else:
-                    papers = db.session.query(Paper, Deliver).filter(current_user.user_id == Deliver.teacher_id,
-                                                                     Deliver.paper_id == Paper.paper_id,
-                                                                     Paper.paper_time > start_date).with_entities(
-                        Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
-                        Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
-            else:
-                # 日期全部不合法则显示所有信息
-                if date_state == 0:
-                    papers = db.session.query(Paper, Deliver).filter(current_user.user_id == Deliver.teacher_id,
-                                                                     Deliver.paper_id == Paper.paper_id,
-                                                                     Paper.paper_state == info_state).with_entities(
-                        Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
-                        Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
-                # 日期都合法
-                elif date_state == 1:
-                    papers = db.session.query(Paper, Deliver).filter(current_user.user_id == Deliver.teacher_id,
-                                                                     Deliver.paper_id == Paper.paper_id,
-                                                                     Paper.paper_time < end_date,
-                                                                     Paper.paper_time > start_date,
-                                                                     Paper.paper_state == info_state).with_entities(
-                        Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
-                        Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
-                # 截止日期合法
-                elif date_state == 2:
-                    papers = db.session.query(Paper, Deliver).filter(current_user.user_id == Deliver.teacher_id,
-                                                                     Deliver.paper_id == Paper.paper_id,
-                                                                     Paper.paper_time < end_date,
-                                                                     Paper.paper_state == info_state).with_entities(
-                        Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
-                        Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
-                # 开始日期合法
-                else:
-                    papers = db.session.query(Paper, Deliver).filter(current_user.user_id == Deliver.teacher_id,
-                                                                     Deliver.paper_id == Paper.paper_id,
-                                                                     Paper.paper_time > start_date,
-                                                                     Paper.paper_state == info_state).with_entities(
-                        Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
-                        Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
-            show_html = ''
-            for paper in papers:
-                show_html += '<tr><td><div class="custom-control custom-checkbox"><input class="custom-control-input" ' \
-                             'type="checkbox" id="' + str(paper[0]) + '"><label class="custom-control-label" for="' \
-                             + str(paper[0]) + '"></label></div></td><td>' + paper[1] + '</td><td>' + paper[2] + \
-                             '</td><td>' + paper[3] + '</td><td>' + paper[4].strftime('%Y-%m-%d') + '</td><td>' \
-                             + paper[6] + '</td><td>' + str(paper[7]) + '</td><td>' + \
-                             str(paper[8]) + '</td><td>' + paper[9] + '</td><td>'
-                if paper[12] == "已投递":
-                    show_html += '<span class="badge badge-success">' + paper[12] + '</span></td>' + '</tr>'
-                if paper[12] == "已审核":
-                    show_html += '<span class="badge badge-info">' + paper[12] + '</span></td>' + '</tr>'
-                if paper[12] == "已发表":
-                    show_html += '<span class="badge badge-primary">' + paper[12] + '</span></td>' + '</tr>'
-            table_data = {
-                "type": 1,
-                "html": show_html
-            }
-            return jsonify(table_data)
-        # 获取项目信息
-        else:
-            # 获取全部项目信息
-            if info_state == "全部":
-                # 日期全部不合法则显示所有信息
-                if date_state == 0:
-                    projects = db.session.query(Project, Participate).filter \
-                        (current_user.user_id == Participate.teacher_id, Project.project_id == Participate.project_id) \
-                        .with_entities(Project.id, Project.project_id, Project.project_name, Project.project_source,
-                                       Project.project_type, Project.project_principal, Project.project_principal_title,
-                                       Project.project_time, Project.project_state).all()
-                # 日期全部合法
-                elif date_state == 1:
-                    projects = db.session.query(Project, Participate).filter \
-                        (current_user.user_id == Participate.teacher_id, Project.project_id == Participate.project_id,
-                         Project.project_time > start_date, Project.project_time < end_date).with_entities \
-                        (Project.id, Project.project_id, Project.project_name, Project.project_source,
-                         Project.project_type, Project.project_principal, Project.project_principal_title,
-                         Project.project_time, Project.project_state).all()
-                # 截止日期合法
-                elif date_state == 2:
-                    projects = db.session.query(Project, Participate).filter \
-                        (current_user.user_id == Participate.teacher_id, Project.project_id == Participate.project_id,
-                         Project.project_time < end_date).with_entities(Project.id, Project.project_id,
-                                                                        Project.project_name, Project.project_source,
-                                                                        Project.project_type, Project.project_principal,
-                                                                        Project.project_principal_title,
-                                                                        Project.project_time,
-                                                                        Project.project_state).all()
-                # 开始日期合法
-                else:
-                    projects = db.session.query(Project, Participate).filter \
-                        (current_user.user_id == Participate.teacher_id, Project.project_id == Participate.project_id,
-                         Project.project_time > start_date).with_entities(Project.id, Project.project_id,
-                                                                          Project.project_name, Project.project_source,
-                                                                          Project.project_type,
-                                                                          Project.project_principal,
-                                                                          Project.project_principal_title,
-                                                                          Project.project_time,
-                                                                          Project.project_state).all()
-            # 获取某个状态的信息
-            else:
-                # 日期全部不合法则显示所有信息
-                if date_state == 0:
-                    projects = db.session.query(Project, Participate).filter \
-                        (current_user.user_id == Participate.teacher_id, Project.project_id == Participate.project_id,
-                         Project.project_state == info_state).with_entities \
-                        (Project.id, Project.project_id, Project.project_name, Project.project_source,
-                         Project.project_type, Project.project_principal, Project.project_principal_title,
-                         Project.project_time, Project.project_state).all()
-                # 日期全部合法
-                elif date_state == 1:
-                    projects = db.session.query(Project, Participate).filter \
-                        (current_user.user_id == Participate.teacher_id, Project.project_id == Participate.project_id,
-                         Project.project_time > start_date, Project.project_time < end_date, Project.project_state ==
-                         info_state).with_entities(Project.id, Project.project_id, Project.project_name,
-                                                   Project.project_source, Project.project_type,
-                                                   Project.project_principal, Project.project_principal_title,
-                                                   Project.project_time, Project.project_state).all()
-                # 截止日期合法
-                elif date_state == 2:
-                    projects = db.session.query(Project, Participate).filter \
-                        (current_user.user_id == Participate.teacher_id, Project.project_id == Participate.project_id,
-                         Project.project_time < end_date, Project.project_state == info_state).with_entities \
-                        (Project.id, Project.project_id, Project.project_name, Project.project_source,
-                         Project.project_type, Project.project_principal, Project.project_principal_title,
-                         Project.project_time, Project.project_state).all()
-                # 开始日期合法
-                else:
-                    projects = db.session.query(Project, Participate).filter \
-                        (current_user.user_id == Participate.teacher_id, Project.project_id == Participate.project_id,
-                         Project.project_time > start_date, Project.project_state == info_state).with_entities \
-                        (Project.id, Project.project_id, Project.project_name, Project.project_source,
-                         Project.project_type, Project.project_principal, Project.project_principal_title,
-                         Project.project_time, Project.project_state).all()
-            show_html = ''
-            for project in projects:
-                show_html += '<tr><td><div class="custom-control custom-checkbox"><input class="custom-control-input" ' \
-                             'type="checkbox" id="' + str(project[0]) + '"><label class="custom-control-label" for="' \
-                             + str(project[0]) + '"></label></div></td><td>' + project[1] + '</td><td>' + project[2] + \
-                             '</td><td>' + project[3] + '</td><td>' + project[4] + '</td><td>' + project[5] + \
-                             '</td><td>' + project[6] + '</td><td>' + project[7].strftime('%Y-%m-%d') + '</td><td>'
-                if project[8] == "已申请":
-                    show_html += '<span class="badge badge-warning">' + project[8] + '</span></td>' + '</tr>'
-                if project[8] == "已审核":
-                    show_html += '<span class="badge badge-info">' + project[8] + '</span></td>' + '</tr>'
-                if project[8] == "已立项":
-                    show_html += '<span class="badge badge-primary">' + project[8] + '</span></td>' + '</tr>'
-                if project[8] == "已结题":
-                    show_html += '<span class="badge badge-success">' + project[8] + '</span></td>' + '</tr>'
-            table_data = {
-                "type": 2,
-                "html": show_html
-            }
-            return jsonify(table_data)
 
 
 @app.route("/modify/patent/<patent_id>", methods=["GET", "POST"])
@@ -976,19 +677,30 @@ def modify_patent(patent_id):
             Patent.patent_id, Patent.patent_name, Patent.patent_type, Patent.patent_state, Patent.patent_time,
             Patent.patent_owner).first()
         if len(patent_info) != 0:
+            teacher_apply_info = db.session.query(Apply).filter(Apply.patent_id == patent_info[0], Apply.teacher_id ==
+                                                                current_user.user_id, Apply.patent_type ==
+                                                                patent_info[2]).with_entities(Apply.teacher_type).first()
             data = {"patent_id": patent_info[0], "patent_name": patent_info[1], "patent_type": patent_info[2],
                     "patent_state": patent_info[3], "patent_time": patent_info[4].strftime('%Y-%m-%d'),
-                    "patent_owner": patent_info[5]}
+                    "patent_owner": patent_info[5], "inventor_rank": teacher_apply_info[0]}
         else:
             data = {"patent_id": "", "patent_name": "", "patent_type": "", "patent_state": "", "patent_time": "",
-                    "patent_owner": ""}
+                    "patent_owner": "", "inventor_rank": ""}
         return render_template("modify_patent.html", patent_data=data)
     if request.method == "POST":
         data = request.get_json()
+        print(data)
         patent_state = data["patent_state"]
+        inventor_rank = data["inventor_rank"]
         patent_info = db.session.query(Patent).filter(Patent.id == patent_id).first()
         if patent_info is not None:
             patent_info.patent_state = patent_state
+            db.session.commit()
+            patent_type = patent_info.patent_type
+            real_patent_id = patent_info.patent_id
+            teacher_invent_info = db.session.query(Apply).filter(Apply.patent_id == real_patent_id, Apply.patent_type ==
+                                                                 patent_type).first()
+            teacher_invent_info.teacher_type = int(inventor_rank)
             db.session.commit()
             msg = "yes"
         else:
@@ -1005,17 +717,19 @@ def modify_paper(paper_id):
             Paper.paper_state, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence, Paper.paper_search_type,
             Paper.paper_doi).first()
         if len(paper_info) != 0:
+            author_rank = db.session.query(Deliver).filter(Deliver.paper_id == paper_info[0], Deliver.teacher_id ==
+                                                           current_user.user_id).with_entities(Deliver.teacher_type).first()
             data = {
                 "paper_id": paper_info[0], "paper_name": paper_info[1], "paper_source": paper_info[2],
                 "paper_region": paper_info[3], "paper_time": paper_info[4], "paper_state": paper_info[5],
                 "paper_keywords": paper_info[6], "paper_quote": paper_info[7], "paper_influence": paper_info[8],
-                "paper_search_type": paper_info[9], "paper_doi": paper_info[10]
+                "paper_search_type": paper_info[9], "paper_doi": paper_info[10], "author_rank": author_rank[0]
             }
         else:
             data = {
                 "paper_id": "", "paper_name": "", "paper_source": "", "paper_region": "", "paper_time": "",
                 "paper_state": "", "paper_keywords": "", "paper_quote": "", "paper_influence": "",
-                "paper_search_type": "", "paper_doi": ""
+                "paper_search_type": "", "paper_doi": "", "author_rank": ""
             }
         return render_template("modify_paper.html", paper_data=data)
     if request.method == "POST":
@@ -1027,17 +741,21 @@ def modify_paper(paper_id):
         paper_search_type = data["paper_search_type"]
         paper_press = data["paper_press"]
         paper_doi = data["paper_doi"]
+        author_rank = data["author_rank"]
         # 查询信息
         paper_info = db.session.query(Paper).filter(Paper.id == paper_id).first()
         # 修改信息
         if paper_info is not None:
             try:
+                author_rank_info = db.session.query(Deliver).filter(Deliver.paper_id == paper_info.paper_id,
+                                                                    Deliver.teacher_id == current_user.user_id).first()
                 paper_info.paper_state = paper_state
                 paper_info.paper_quote = paper_quote
                 paper_info.paper_influence = paper_influence
                 paper_info.paper_search_type = paper_search_type
                 paper_info.paper_press = paper_press
                 paper_info.paper_doi = paper_doi
+                author_rank_info.teacher_type = int(author_rank)
                 db.session.commit()
                 msg = "yes"
             except:
@@ -1056,26 +774,33 @@ def modify_project(project_id):
             Project.project_time, Project.project_state, Project.project_principal, Project.project_principal_title
         ).first()
         if len(project_info) != 0:
+            participator_rank = db.session.query(Participate).filter(
+                Participate.project_id == project_info[0], Participate.teacher_id == current_user.user_id).with_entities(
+                Participate.teacher_type).first()
             data = {
                 "project_id": project_info[0], "project_name": project_info[1], "project_source": project_info[2],
                 "project_type": project_info[3], "project_time": project_info[4], "project_state": project_info[5],
-                "project_principal": project_info[6], "project_principal_title": project_info[7]
+                "project_principal": project_info[6], "project_principal_title": project_info[7],
+                "participator_rank": participator_rank[0]
             }
         else:
             data = {
                 "project_id": "", "project_name": "", "project_source": "", "project_type": "", "project_time": "",
-                "project_state": "", "project_principal": "", "project_principal_title": ""
+                "project_state": "", "project_principal": "", "project_principal_title": "", "participator_rank": ""
             }
         return render_template("modify_project.html", project_data=data)
     if request.method == "POST":
         data = request.get_json()
         project_state = data["project_state"]
         project_principal_title = data["project_principal_title"]
-        print(data)
+        participator_rank = data["participator_rank"]
         project_info = db.session.query(Project).filter(Project.id == project_id).first()
         if project_info is not None:
             project_info.project_state = project_state
             project_info.project_principal_title = project_principal_title
+            participator_info = db.session.query(Participate).filter(Participate.project_id == project_info.project_id,
+                                                                     Participate.teacher_id == current_user.user_id).first()
+            participator_info.teacher_type = int(participator_rank)
             db.session.commit()
             msg = "yes"
         else:
@@ -1083,20 +808,279 @@ def modify_project(project_id):
         return jsonify(msg)
 
 
+@app.route("/add/patent", methods=["GET", "POST"])
+@login_required
+def add_patent():
+    if request.method == "GET":
+        return render_template("add_patent.html")
+    if request.method == "POST":
+        data = request.get_json()
+        patent_id = data["patent_id"]
+        patent_name = data["patent_name"]
+        patent_type = data["patent_type"]
+        patent_time = data["patent_time"]
+        patent_owner = data["patent_owner"]
+        patent_state = data["patent_state"]
+        inventor_rank = data["inventor_rank"]
+        if patent_id.strip() == "" or patent_name.strip() == "" or patent_time.strip() == "" or patent_owner.strip() \
+                == "":
+            msg = "信息填写不完整"
+        else:
+            patent_in = db.session.query(Patent).filter(Patent.patent_id == patent_id, Patent.patent_state ==
+                                                        patent_state).first()
+            if patent_in is None:
+                new_patent = Patent(patent_id, patent_name, patent_owner, parse(patent_time), patent_state, patent_type)
+                db.session.add(new_patent)
+                db.session.commit()
+                new_apply = Apply(current_user.user_id, patent_id, patent_type, int(inventor_rank))
+                db.session.add(new_apply)
+                db.session.commit()
+                msg = "yes"
+            else:
+                patent_info_in = db.session.query(Apply).filter(Apply.patent_id == patent_id,
+                                                                Apply.teacher_id == current_user.user_id,
+                                                                Apply.patent_type == patent_type).first()
+                if patent_info_in is None:
+                    new_apply = Apply(current_user.user_id, patent_id, patent_type, int(inventor_rank))
+                    db.session.add(new_apply)
+                    db.session.commit()
+                    msg = "yes"
+                else:
+                    msg = "该专利信息已存在"
+        return jsonify(msg)
+
+
+@app.route("/add/paper", methods=["GET", "POST"])
+@login_required
+def add_paper():
+    if request.method == "GET":
+        return render_template("add_paper.html")
+    if request.method == "POST":
+        data = request.get_json()
+        paper_id = data["paper_id"]
+        paper_name = data["paper_name"]
+        paper_source = data["paper_source"]
+        paper_region = data["paper_region"]
+        paper_time = data["paper_time"]
+        paper_state = data["paper_state"]
+        paper_keywords = data["paper_keywords"]
+        paper_quote = data["paper_quote"]
+        paper_influence = data["paper_influence"]
+        paper_search_type = data["paper_search_type"]
+        paper_press = data["paper_press"]
+        paper_doi = data["paper_doi"]
+        author_rank = data["author_rank"]
+        if paper_id.strip() == "" or paper_name.strip() == "" or paper_source.strip() == "" or paper_time.strip() == "" \
+                or paper_region.strip() == "":
+            msg = "信息填写不完整"
+        else:
+            try:
+                paper_quote = int(paper_quote)
+                paper_influence = float(paper_influence)
+                paper_in = db.session.query(Paper).filter(Paper.paper_id == paper_id).first()
+                if paper_in is None:
+                    new_paper = Paper(paper_id, paper_name, paper_source, parse(paper_time), paper_region, paper_keywords,
+                                      paper_influence, paper_quote, paper_press, paper_search_type, paper_doi, paper_state)
+                    db.session.add(new_paper)
+                    db.session.commit()
+                    new_deliver = Deliver(current_user.user_id, paper_id, int(author_rank))
+                    db.session.add(new_deliver)
+                    db.session.commit()
+                    msg = "yes"
+                else:
+                    deliver_info_in = db.session.query(Deliver).filter(Deliver.paper_id == paper_id,
+                                                                       Deliver.teacher_id == current_user.user_id).first()
+                    if deliver_info_in is None:
+                        new_deliver = Deliver(current_user.user_id, paper_id, int(author_rank))
+                        db.session.add(new_deliver)
+                        db.session.commit()
+                        msg = "yes"
+                    else:
+                        msg = "该论文信息已存在"
+            except ValueError:
+                msg = "填写信息有误"
+        return jsonify(msg)
+
+
+@app.route("/add/project", methods=["GET", "POST"])
+@login_required
+def add_project():
+    if request.method == "GET":
+        return render_template("add_project.html")
+    if request.method == "POST":
+        data = request.get_json()
+        project_id = data["project_id"]
+        project_name = data["project_name"]
+        project_source = data["project_source"]
+        project_type = data["project_type"]
+        project_state = data["project_state"]
+        project_time = data["project_time"]
+        project_principal = data["project_principal"]
+        project_principal_title = data["project_principal_title"]
+        participator_rank = data["participator_rank"]
+        if project_id.strip() == "" or project_name.strip() == "" or project_time.strip() == "" or project_principal.strip() == "":
+            msg = "填写信息不完整"
+        else:
+            project_in = db.session.query(Project).filter(Project.project_id == project_id).first()
+            if project_in is None:
+                new_project = Project(project_id, project_name, project_type, project_source, project_state,
+                                      project_principal, project_principal_title, parse(project_time))
+                db.session.add(new_project)
+                db.session.commit()
+                new_participate = Participate(current_user.user_id, project_id, int(participator_rank))
+                db.session.add(new_participate)
+                db.session.commit()
+                msg = "yes"
+            else:
+                participate_in = db.session.query(Participate).filter(Participate.project_id == project_id,
+                                                                      Participate.teacher_id == current_user.user_id).first()
+                if participate_in is None:
+                    new_participate = Participate(current_user.user_id, project_id, int(participator_rank))
+                    db.session.add(new_participate)
+                    db.session.commit()
+                    msg = "yes"
+                else:
+                    msg = "该项目信息已存在"
+        return msg
+
+
+@app.route("/modify/info", methods=["GET", "POST"])
+@login_required
+def modify_info():
+    if request.method == "GET":
+        user_info = db.session.query(Info).filter(Info.user_id == current_user.user_id).first()
+        user_id = user_info.user_id
+        user_email = user_info.email
+        user_name = user_info.name
+        province1 = user_info.province1
+        city1 = user_info.city1
+        district1 = user_info.district1
+        address1 = user_info.address1
+        province2 = user_info.province2
+        city2 = user_info.city2
+        district2 = user_info.district2
+        address2 = user_info.address2
+        user_title = user_info.title
+        user_data = {
+            "user_id": user_id,
+            "user_email": user_email,
+            "user_name": user_name,
+            "province1": province1,
+            "city1": city1,
+            "district1": district1,
+            "address1": address1,
+            "province2": province2,
+            "city2": city2,
+            "district2": district2,
+            "address2": address2,
+            "user_title": user_title
+        }
+        return render_template("modify_user.html", user_data=user_data)
+    if request.method == "POST":
+        data = request.get_json()
+        user_title = data["user_title"]
+        province1 = data["province1"]
+        city1 = data["city1"]
+        district1 = data["district1"]
+        address1 = data["address1"]
+        province2 = data["province2"]
+        city2 = data["city2"]
+        district2 = data["district2"]
+        address2 = data["address2"]
+        if address1.strip() == "" or district1 == "" or city1 == "" or province1 == "":
+            msg = "通讯地址1不完整"
+        else:
+            if address2.strip() == "" and district2 == "" and city2 == "" and province2 == "":
+                province2 = ""
+                city2 = ""
+                district2 = ""
+                address2 = ""
+                msg = "yes"
+            elif address2.strip() != "" and district2 != "" and city2 != "" and province2 != "":
+                msg = "yes"
+            else:
+                province2 = ""
+                city2 = ""
+                district2 = ""
+                address2 = ""
+                msg = "通讯地址2不完整"
+            user_info = db.session.query(Info).filter(Info.user_id == current_user.user_id).first()
+            user_info.title = user_title
+            user_info.province1 = province1
+            user_info.city1 = city1
+            user_info.district1 = district1
+            user_info.address1 = address1
+            user_info.province2 = province2
+            user_info.city2 = city2
+            user_info.district2 = district2
+            user_info.address2 = address2
+            db.session.commit()
+        return jsonify(msg)
+
+
+@app.route("/modify/password", methods=["GET", "POST"])
+@login_required
+def modify_password():
+    if request.method == "GET":
+        return render_template("modify_password.html")
+    if request.method == "POST":
+        data = request.get_json()
+        old_password = data["old_password"]
+        new_password = data["new_password"]
+        confirm_password = data["confirm_password"]
+        print(data)
+        old_password_info = db.session.query(User).filter(User.user_id == current_user.user_id).first()
+        if old_password_info.check_password(old_password):
+            if new_password == confirm_password and len(new_password) >= 6:
+                old_password_info.password = generate_password_hash(new_password)
+                db.session.commit()
+                msg = "yes"
+            elif new_password != confirm_password:
+                msg = "两次密码不一致"
+            elif len(new_password)<6:
+                msg = "密码长度小于6位"
+            else:
+                msg = "请重新检查所填信息"
+        else:
+            msg = "原密码错误"
+        print(msg)
+        return jsonify(msg)
+
+
+@app.route("/export/special", methods=["GET", "POST"])
+@login_required
+def export_special():
+    if request.method == "GET":
+        patent_data = db.session.query(Patent, Apply).filter(
+            Apply.teacher_id == current_user.user_id, Apply.patent_type == Patent.patent_type,
+            Apply.patent_id == Patent.patent_id).with_entities(Patent.id, Patent.patent_id, Patent.patent_name,
+                                                               Patent.patent_type, Patent.patent_owner,
+                                                               Patent.patent_time, Patent.patent_state).all()
+        patent_headers = ["专利权人", "发明人", "专利号", "专利名称", "专利状态", "时间", "专利类型"]
+        return render_template("special_export.html", patent_data=patent_data, patent_headers=patent_headers)
+
+
+@app.route("/export/some", methods=["GET", "POST"])
+@login_required
+def export_some():
+    if request.method == "POST":
+        data = request.get_json()
+        res = make_response(send_from_directory("D:\\test", "学生评价值导入模板.xls", as_attachment=True))
+        res.headers['Content-Type'] = 'text/plain;charset=UTF-8'
+        res.headers['fileName'] = "学生评价值导入模板.xls".encode("utf-8")
+        return res
+
+
 def update_info(interval, name, address, user_id, inform):
     global timer1
     print("我在定时执行")
     try:
+        get_projects(name, address, user_id, inform)
         get_papers(name, address, user_id, inform)
+        get_patents(name, address, user_id, inform)
     except:
-        try:
-            get_patents(name, address, user_id, inform)
-        except:
-            try:
-                get_projects(name, address, user_id, inform)
-            except:
-                timer1 = MyTimer(user_id, interval, update_info, (interval, name, address, user_id, inform))
-                timer1.start()
+        timer1 = MyTimer(user_id, interval, update_info, (interval, name, address, user_id, inform))
+        timer1.start()
 
 
 timer1 = MyTimer("", 10, update_info)

@@ -1,6 +1,7 @@
 $("#patent_submit").click(function () {
    let data = {
        "patent_state": $("#patent_state").val(),
+       "inventor_rank": $("#inventor_rank").val()
    };
    $.ajax({
        type:"POST",
@@ -26,7 +27,8 @@ $("#paper_submit").click(function () {
         "paper_influence": $("#paper_influence").val(),
         "paper_search_type":$("#paper_search_type").val(),
         "paper_press": $("#paper_press").val(),
-        "paper_doi": $("#paper_doi").val()
+        "paper_doi": $("#paper_doi").val(),
+        "author_rank": $("#author_rank").val()
     };
     $.ajax({
         type: "POST",
@@ -48,7 +50,8 @@ $("#paper_submit").click(function () {
 $("#project_submit").click(function () {
     let data = {
         "project_state": $("#project_state").val(),
-        "project_principal_title": $("#project_principal_title").val()
+        "project_principal_title": $("#project_principal_title").val(),
+        "participator_rank": $("#participator_rank").val()
     };
     $.ajax({
         type: "POST",

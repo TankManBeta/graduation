@@ -48,15 +48,28 @@ class Info(db.Model):
     name = db.Column(db.String(128), nullable=False)
     user_id = db.Column(db.String(128), nullable=False, unique=True)
     email = db.Column(db.String(128), nullable=False, unique=True)
+    province1 = db.Column(db.String(128), nullable=False)
+    city1 = db.Column(db.String(128), nullable=False)
+    district1 = db.Column(db.String(128), nullable=False)
     address1 = db.Column(db.String(128), nullable=False)
+    province2 = db.Column(db.String(128), nullable=True)
+    city2 = db.Column(db.String(128), nullable=True)
+    district2 = db.Column(db.String(128), nullable=True)
     address2 = db.Column(db.String(128), nullable=True)
     title = db.Column(db.String(128), nullable=True)
 
-    def __init__(self, name, user_id, email, address1, address2, title):
+    def __init__(self, name, user_id, email, province1, city1, district1, address1, province2, city2, district2,
+                 address2, title):
         self.name = name
         self.user_id = user_id
         self.email = email
+        self.province1 = province1
+        self.city1 = city1
+        self.district1 = district1
         self.address1 = address1
+        self.province2 = province2
+        self.city2 = city2
+        self.district2 = district2
         self.address2 = address2
         self.title = title
 

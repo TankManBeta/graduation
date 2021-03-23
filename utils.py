@@ -31,8 +31,15 @@ class PaperCrawler:
             "start": 0
         }
         # 第一次返回的结果
-        response = requests.get(self.paper_url, params=para)
-        response_data = json.loads(response.text)
+        try:
+            response = requests.get(self.paper_url, params=para)
+            response_data = json.loads(response.text)
+        except:
+            try:
+                response = requests.get(self.paper_url, params=para)
+                response_data = json.loads(response.text)
+            except:
+                return all_items
         # 不为空则存储结果
         while len(response_data["data"]["items"]) != 0:
             for item in response_data["data"]["items"]:
@@ -109,8 +116,13 @@ class PatentCrawler:
         options.add_argument('--headless')
         options.add_argument('--disable-gpu')
         browser = webdriver.Chrome(self.executable_path, options=options)
-        # browser = webdriver.Chrome(self.executable_path)
-        browser.get(self.patent_url)
+        try:
+            browser.get(self.patent_url)
+        except:
+            try:
+                browser.get(self.patent_url)
+            except:
+                return all_items
         time.sleep(2)
         # 设置第一个检索条件
         browser.find_element_by_xpath('//*[@id="patentgradetxt"]/dd[1]/div[2]/div[1]/div[1]').click()
@@ -136,7 +148,6 @@ class PatentCrawler:
                     try:
                         my_xpath = '//*[@id="gridTable"]/table/tbody/tr[{}]/td[2]/a'.format(i)
                         browser.find_element_by_xpath(my_xpath).click()
-                        print("点击了")
                         time.sleep(2)
                         # 切换到新打开的标签页
                         windows = browser.window_handles
@@ -191,7 +202,13 @@ class ProjectCrawler:
         options.add_argument('--disable-gpu')
         browser = webdriver.Chrome(self.executable_path, options=options)
         browser_detail = webdriver.Chrome(self.executable_path, options=options)
-        browser.get(self.project_url)
+        try:
+            browser.get(self.project_url)
+        except:
+            try:
+                browser.get(self.project_url)
+            except:
+                return all_items
         time.sleep(1)
         # 设置第一个检索条件
         browser.find_element_by_xpath('//*[@id="org-filter"]').send_keys(self.address)
@@ -291,12 +308,10 @@ def split_words(para):
 
 
 # if __name__ == "__main__":
-#     patent_crawler = PatentCrawler("陈晓江", "西北大学")
-#     data2 = patent_crawler.get_data()
+    # patent_crawler = PatentCrawler("陈晓江", "西北大学")
+    # data2 = patent_crawler.get_data()
     # paper_crawler = PaperCrawler("王薇", "西北大学信息科学与技术学院")
     # data1 = paper_crawler.get_data()
     # paper_crawler.handler_paper_items(data1)
     # project_crawler = ProjectCrawler("陈晓江", "西北大学")
     # project_crawler.get_data()
-
-

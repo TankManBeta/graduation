@@ -41,11 +41,7 @@
         <span class="theme-click">
 			<span class="ti-settings"></span>
         </span>
-        <a href="/tool">aaaaa</a>
-        <span class="theme-color theme-blue" data-color="blue"></span>
-        <span class="theme-color theme-red" data-color="red"></span>
-        <span class="theme-color theme-violet" data-color="violet"></span>
-        <span class="theme-color theme-yellow" data-color="yellow"></span>
+        <a id="tool" href="/tool"><span class="ti-light-bulb" style="font-size: 30px"></span></a>
     </div>
     <!-- /Color Changer -->
     <div class="wrapper">
@@ -156,29 +152,29 @@
                                 <div class="form-row">
 
                                     <div class="form-group col-md-6">
-                                        <label for="paper_id">论文编号</label>
+                                        <label for="paper_id">（*）论文编号</label>
                                         <input type="text" class="form-control" id="paper_id">
                                     </div>
                                     <div class="form-group col-md-6">
-                                        <label for="paper_name">论文名称</label>
+                                        <label for="paper_name">（*）论文名称</label>
                                         <input type="text" class="form-control" id="paper_name">
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                        <label for="paper_source">论文来源</label>
+                                        <label for="paper_source">（*）论文来源</label>
                                         <input type="text" class="form-control" id="paper_source">
                                     </div>
                                     <div class="form-group col-md-6">
-                                        <label for="paper_region">机构地区</label>
+                                        <label for="paper_region">（*）机构地区</label>
                                         <input type="text" class="form-control" id="paper_region">
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                        <label for="paper_time">发表日期</label>
+                                        <label for="paper_time">（*）时间</label>
                                         <input type="date" placeholder="Date of Birth" class="form-control" id="paper_time">
                                     </div>
                                     <div class="form-group col-md-6">
-                                        <label for="paper_state">论文状态</label>
+                                        <label for="paper_state">（*）论文状态</label>
                                         <select class="form-control" id="paper_state">
 											<option value="已投递">已投递</option>
 											<option value="已审核">已审核</option>
@@ -220,7 +216,7 @@
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                       <label for="author_rank">作者类型</label>
+                                       <label for="author_rank">（*）作者类型</label>
                                         <select class="form-control" id="author_rank">
 											<option value="0">通讯作者</option>
 											<option value="1">第一作者</option>
@@ -270,6 +266,7 @@
     <script src="/static/js/distpicker.js "></script>
     <!-- submit info -->
     <script src="/static/js/add-info.js"></script>
+    <script src="/static/js/tool.js"></script>
 
 </body>
 

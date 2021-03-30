@@ -41,11 +41,7 @@
         <span class="theme-click">
 			<span class="ti-settings"></span>
         </span>
-        <span class="theme-color theme-default theme-active" data-color="green"></span>
-        <span class="theme-color theme-blue" data-color="blue"></span>
-        <span class="theme-color theme-red" data-color="red"></span>
-        <span class="theme-color theme-violet" data-color="violet"></span>
-        <span class="theme-color theme-yellow" data-color="yellow"></span>
+        <a id="tool" href="/tool"><span class="ti-light-bulb" style="font-size: 30px"></span></a>
     </div>
     <!-- /Color Changer -->
     <div class="wrapper">
@@ -156,16 +152,16 @@
 
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
-                                        <label for="project_id">项目编号</label>
+                                        <label for="project_id">（*）项目编号</label>
                                         <input type="text" class="form-control" id="project_id">
                                     </div>
                                     <div class="form-group col-md-6">
-                                        <label for="project_name">项目名称</label>
+                                        <label for="project_name">（*）项目名称</label>
                                         <input type="text" class="form-control" id="project_name">
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                        <label for="project_source">项目来源</label>
+                                        <label for="project_source">（*）项目来源</label>
                                         <select class="form-control" id="project_source">
 											<option value="国家自然科学基金委员会">国家自然科学基金委员会</option>
                                             <option value="地方科技项目">地方科技项目</option>
@@ -175,7 +171,7 @@
 										</select>
                                     </div>
                                     <div class="form-group col-md-6">
-                                        <label for="project_type">项目类型</label>
+                                        <label for="project_type">（*）项目类型</label>
                                         <select class="form-control" id="project_type">
 											<option value="面上项目">面上项目</option>
                                             <option value="青年科学基金项目">青年科学基金项目</option>
@@ -191,11 +187,11 @@
 
 
                                     <div class="form-group col-md-6">
-                                        <label for="project_time">立项时间</label>
+                                        <label for="project_time">（*）时间</label>
                                         <input type="date" placeholder="Date of Birth" class="form-control" id="project_time">
                                     </div>
                                     <div class="form-group col-md-6">
-                                        <label for="project_state">项目状态</label>
+                                        <label for="project_state">（*）项目状态</label>
                                         <select class="form-control" id="project_state">
 											<option value="已申请">已申请</option>
 											<option value="已审核">已审核</option>
@@ -205,11 +201,11 @@
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                        <label for="project_principal">项目主持人</label>
+                                        <label for="project_principal">（*）项目主持人</label>
                                         <input type="text" class="form-control" id="project_principal">
                                     </div>
                                     <div class="form-group col-md-6">
-                                        <label for="project_principal_title">主持人职称</label>
+                                        <label for="project_principal_title">（*）主持人职称</label>
                                         <select class="form-control" id="project_principal_title">
 											<option value="教授">教授</option>
 											<option value="副教授">副教授</option>
@@ -218,7 +214,7 @@
                                     </div>
 
                                     <div class="form-group col-md-6">
-                                        <label for="participator_rank">参与类型</label>
+                                        <label for="participator_rank">（*）参与类型</label>
                                         <select class="form-control" id="participator_rank">
 											<option value="0">主持人</option>
 											<option value="1">参与人</option>
@@ -266,6 +262,7 @@
     <script src="/static/js/distpicker.js"></script>
     <!-- submit info -->
     <script src="/static/js/add-info.js"></script>
+    <script src="/static/js/tool.js"></script>
 </body>
 
 </html>

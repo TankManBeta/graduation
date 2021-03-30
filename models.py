@@ -74,7 +74,7 @@ class Info(db.Model):
         self.title = title
 
     def __repr__(self):
-        return "<Info %r %r>" %(self.user_id, self.name)
+        return "<Info %r %r>" % (self.user_id, self.name)
 
 
 class Project(db.Model):
@@ -205,4 +205,3 @@ class Apply(db.Model):
 
     def __repr__(self):
         return "<Apply %r %r %r>" % (self.teacher_id, self.patent_id, self.patent_type)
-

@@ -513,6 +513,15 @@ table.dataTable th:first-child {
     cursor: pointer;
 }
 
+#switcher .ti-light-bulb{
+    width: 30px;
+    height: 25px;
+    margin: 15px 10px;
+    position: absolute;
+    left: 35px;
+    top: 10px;
+}
+
 #switcher .theme-red {
     width: 25px;
     height: 25px;

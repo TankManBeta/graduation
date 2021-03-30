@@ -17,6 +17,7 @@ from aip import AipOcr
 from ctypes import windll
 
 
+# 论文信息爬虫
 class PaperCrawler:
     def __init__(self, name, address):
         self.name = name
@@ -108,6 +109,7 @@ class PaperCrawler:
         return results
 
 
+# 专利信息爬虫
 class PatentCrawler:
     def __init__(self, name, address):
         self.name = name
@@ -153,7 +155,10 @@ class PatentCrawler:
                 for i in range(1, 21):
                     try:
                         my_xpath = '//*[@id="gridTable"]/table/tbody/tr[{}]/td[2]/a'.format(i)
-                        browser.find_element_by_xpath(my_xpath).click()
+                        try:
+                            browser.find_element_by_xpath(my_xpath).click()
+                        except common.exceptions.StaleElementReferenceException:
+                            continue
                         time.sleep(2)
                         # 切换到新打开的标签页
                         windows = browser.window_handles
@@ -186,9 +191,11 @@ class PatentCrawler:
                         browser.switch_to.window(windows[0])
                     except common.exceptions.ElementNotInteractableException:
                         continue
+                    except common.exceptions.ElementClickInterceptedException:
+                        continue
                 # 一页获取完成之后翻页
-                time.sleep(1)
-                browser.find_element_by_xpath('//*[@id="PageNext"]').click()
+                time.sleep(2)
+                browser.find_element_by_id("PageNext").click()
                 time.sleep(2)
             except common.exceptions.NoSuchElementException:
                 break
@@ -197,6 +204,7 @@ class PatentCrawler:
         return all_items
 
 
+# 项目信息爬虫
 class ProjectCrawler:
     def __init__(self, name, address):
         self.name = name
@@ -290,6 +298,7 @@ class ProjectCrawler:
         return all_items
 
 
+# MyTimer类，主要是为了添加user_id这个属性
 class MyTimer(Thread):
     def __init__(self, user_id, interval, function, args=None, kwargs=None):
         Thread.__init__(self)
@@ -358,6 +367,7 @@ def on_mouse(event, x, y, flags, param):
         width = abs(point1[0] - point2[0])
         height = abs(point1[1] - point2[1])
         cut_img = img[min_y:min_y+height, min_x:min_x+width]
+        # 不存在则新建目录
         if not os.path.exists(".\\photos"):
             os.makedirs('.\\photos')
         path = '.\\photos\\cut.png'
@@ -381,7 +391,7 @@ def get_text_by_ocr(path):
             text += all_data["words_result"][i]["words"]
 
 
-# 让python指导我们看到的尺寸
+# 让系统知道使用者看到的尺寸
 user32 = windll.user32
 user32.SetProcessDPIAware()
 # 主窗体
@@ -407,7 +417,7 @@ SECRET_KEY = "Y2XDUgYOO8iuhSei6lluFKRDIBQWmsfi"
 #     root.mainloop()
 #     patent_crawler = PatentCrawler("陈晓江", "西北大学")
 #     data2 = patent_crawler.get_data()
-#     paper_crawler = PaperCrawler("王薇", "西北大学信息科学与技术学院")
+#     paper_crawler = PaperCrawler("陈晓江", "西北大学")
 #     data1 = paper_crawler.get_data()
 #     paper_crawler.handler_paper_items(data1)
 #     project_crawler = ProjectCrawler("陈晓江", "西北大学")

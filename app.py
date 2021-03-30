@@ -641,20 +641,17 @@ def update_auto():
             Info.name, Info.address1, Info.address2, Info.user_id).first()
         name = user_data[0]
         address1 = user_data[1]
-        # address1 = split_words(address1)[3]
         address1 = split_words(address1)[0]
         address2 = user_data[2]
         if address2 != '':
             address2 = split_words(address2)[0]
-            # address2 = split_words(address2)[3]
             timer1 = MyTimer(current_user.user_id, interval, update_info, (name, address1, user_data[3], is_inform))
             timer2 = MyTimer(current_user.user_id, interval, update_info, (name, address2, user_data[3], is_inform))
             # 启动定时任务
             timer1.start()
             timer2.start()
         else:
-            timer1 = MyTimer(current_user.user_id, interval, update_info,
-                             (interval, name, address1, user_data[3], is_inform))
+            timer1 = MyTimer(current_user.user_id, interval, update_info, (name, address1, user_data[3], is_inform))
             # 启动定时任务
             timer1.start()
         return jsonify("success")
@@ -829,10 +826,11 @@ def add_patent():
                 == "":
             msg = "信息填写不完整"
         else:
-            patent_in = db.session.query(Patent).filter(Patent.patent_id == patent_id, Patent.patent_state ==
-                                                        patent_state).first()
+            patent_in = db.session.query(Patent).filter(Patent.patent_id == patent_id, Patent.patent_type ==
+                                                        patent_type).first()
             if patent_in is None:
-                new_patent = Patent(patent_id, patent_name, patent_owner, parse(patent_time), patent_state, patent_type)
+                new_patent = Patent(patent_id, patent_name, patent_owner, parse(patent_time), patent_state, patent_type,
+                                    current_user.user_name)
                 db.session.add(new_patent)
                 db.session.commit()
                 new_apply = Apply(current_user.user_id, patent_id, patent_type, int(inventor_rank))
@@ -840,10 +838,15 @@ def add_patent():
                 db.session.commit()
                 msg = "yes"
             else:
-                patent_info_in = db.session.query(Apply).filter(Apply.patent_id == patent_id,
-                                                                Apply.teacher_id == current_user.user_id,
-                                                                Apply.patent_type == patent_type).first()
-                if patent_info_in is None:
+                apply_info_in = db.session.query(Apply).filter(Apply.patent_id == patent_id,
+                                                               Apply.teacher_id == current_user.user_id,
+                                                               Apply.patent_type == patent_type).first()
+                if apply_info_in is None:
+                    all_inventors = patent_in.patent_inventors
+                    is_in = True if current_user.user_name in all_inventors.split(';') else False
+                    if not is_in:
+                        patent_in.patent_inventors = all_inventors + ";" + current_user.user_name
+                        db.session.commit()
                     new_apply = Apply(current_user.user_id, patent_id, patent_type, int(inventor_rank))
                     db.session.add(new_apply)
                     db.session.commit()
@@ -1040,7 +1043,7 @@ def modify_password():
                 msg = "yes"
             elif new_password != confirm_password:
                 msg = "两次密码不一致"
-            elif len(new_password)<6:
+            elif len(new_password) < 6:
                 msg = "密码长度小于6位"
             else:
                 msg = "请重新检查所填信息"
@@ -1187,6 +1190,9 @@ def export_special():
 @app.route("/tool", methods=["GET", "POST"])
 def easy_tool():
     if request.method == "GET":
+        os.system(".\\package.exe")
+        return ""
+    if request.method == "POST":
         os.system(".\\package.exe")
         return ""
 

@@ -9,6 +9,8 @@ from dateutil.parser import parse
 from datetime import datetime
 from werkzeug.security import generate_password_hash
 from urllib.parse import quote
+import openpyxl, shutil, os
+from openpyxl.styles import Alignment, Font
 
 app = Flask(__name__)
 app.config.from_object(settings)
@@ -1048,7 +1050,7 @@ def modify_password():
         return jsonify(msg)
 
 
-@app.route("/export/special", methods=["GET", "POST"])
+@app.route("/export", methods=["GET", "POST"])
 @login_required
 def export_special():
     if request.method == "GET":
@@ -1061,7 +1063,6 @@ def export_special():
         return render_template("special_export.html", patent_data=patent_data, patent_headers=patent_headers)
     if request.method == "POST":
         data = request.get_json()
-        print(data)
         # 需要导出的信息项
         optional_headers = data["export_header"]
         # 需要导出的编号
@@ -1077,7 +1078,7 @@ def export_special():
                 for i in export_lists:
                     source_data = db.session.query(Patent).filter(Patent.id == i).with_entities(
                         Patent.patent_owner, Patent.patent_inventors, Patent.patent_id, Patent.patent_name,
-                        Patent.patent_state, Patent.patent_time, Patent.patent_state).first()
+                        Patent.patent_state, Patent.patent_time, Patent.patent_type).first()
                     # 转化时间
                     new_data = [source_data[0], source_data[1], source_data[2], source_data[3], source_data[4],
                                 source_data[5].strftime('%Y-%m-%d'), source_data[6]]
@@ -1091,6 +1092,9 @@ def export_special():
                             # 需要哪一项就取第几个
                             final_data.append(new_data[headers.index(item)])
                         data_list.append(final_data)
+                # 表头为空默认导出所有
+            if len(optional_headers) == 0:
+                optional_headers = ["专利权人", "发明人", "专利号", "专利名称", "专利状态", "时间", "专利类型"]
         # 导出论文信息
         elif data["export_type"] == 1:
             headers = ["论文编号", "论文名称", "论文来源", "发表时间", "机构地区", "关键词", "刊登信息", "检索类型", "被引量", "影响因子", "doi号", "论文状态"]
@@ -1101,11 +1105,11 @@ def export_special():
                     source_data = db.session.query(Paper).filter(Paper.id == i).with_entities(
                         Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time, Paper.paper_region,
                         Paper.paper_keywords, Paper.paper_press, Paper.paper_search_type, Paper.paper_quote,
-                        Paper.paper_influence, Paper.paper_influence, Paper.paper_state).first()
-                    # 转化时间
+                        Paper.paper_influence, Paper.paper_doi, Paper.paper_state).first()
+                    # 转化时间，浮点数
                     new_data = [source_data[0], source_data[1], source_data[2], source_data[3].strftime("%Y-%m-%d"),
                                 source_data[4], source_data[5], source_data[6], source_data[7], source_data[8],
-                                source_data[9], source_data[10], source_data[11]]
+                                float(source_data[9]), source_data[10], source_data[11]]
                     # 导出所有项
                     if len(optional_headers) == 0:
                         data_list.append(new_data)
@@ -1116,13 +1120,75 @@ def export_special():
                             # 需要哪一项就取第几个
                             final_data.append(new_data[headers.index(item)])
                         data_list.append(final_data)
+            if len(optional_headers) == 0:
+                optional_headers = ["论文编号", "论文名称", "论文来源", "发表时间", "机构地区", "关键词", "刊登信息", "检索类型", "被引量", "影响因子", "doi号", "论文状态"]
         # 导出项目信息
         else:
-            pass
-        res = make_response(send_from_directory(".\\files", "学生评价值导入模板.xls"))
+            headers = ["项目编号", "项目名称", "项目来源", "项目类型", "时间", "项目状态", "主持人", "主持人职称"]
+            # 用于存放最后的结果
+            data_list = []
+            if len(export_lists) != 0:
+                for i in export_lists:
+                    source_data = db.session.query(Project).filter(Project.id == i).with_entities(
+                        Project.project_id, Project.project_name, Project.project_source, Project.project_type,
+                        Project.project_time, Project.project_state, Project.project_principal,
+                        Project.project_principal_title).first()
+                    # 转化时间
+                    new_data = [source_data[0], source_data[1], source_data[2], source_data[3], source_data[4].strftime("%Y-%m-%d"),
+                                source_data[5], source_data[6], source_data[7]]
+                    # 导出所有项
+                    if len(optional_headers) == 0:
+                        data_list.append(new_data)
+                    # 导出指定的项
+                    else:
+                        final_data = []
+                        for item in optional_headers:
+                            # 需要哪一个就取哪一个
+                            final_data.append(new_data[headers.index(item)])
+                        data_list.append(final_data)
+            if len(optional_headers) == 0:
+                optional_headers = ["项目编号", "项目名称", "项目来源", "项目类型", "时间", "项目状态", "主持人", "主持人职称"]
+        # 删除文件夹里所有文件
+        path = ".\\files\\"
+        shutil.rmtree(path)
+        os.mkdir(path)
+        # 创建工作簿（默认创建一个工作表）
+        new_excel = openpyxl.Workbook()
+        # 选中第一个工作簿
+        work_sheet = new_excel.active
+        # 设置表头
+        for i in range(0, len(optional_headers)):
+            work_sheet.cell(row=1, column=i+1, value=optional_headers[i]).alignment = Alignment(wrapText=True,
+                                                                                                horizontal='center',
+                                                                                                vertical='center')
+        # 填写内容
+        for j in range(0, len(data_list)):
+            for k in range(0, len(data_list[0])):
+                work_sheet.cell(row=j+2, column=k+1, value=data_list[j][k]).alignment = Alignment(wrapText=True,
+                                                                                                  horizontal='center',
+                                                                                                  vertical='center')
+        # 用时间戳给文件命名
+        now_time = datetime.now().strftime("%Y-%m-%d-%H-%M-%S").replace('-', '')
+        excel_name = current_user.user_name + '_' + now_time + '_'
+        if data["export_type"] == 0:
+            excel_name = excel_name + "专利信息.xls"
+        elif data["export_type"] == 1:
+            excel_name = excel_name + "论文信息.xls"
+        else:
+            excel_name = excel_name + "项目信息.xls"
+        new_excel.save(".\\files\\" + excel_name)
+        new_excel.close()
+        res = make_response(send_from_directory(".\\files", excel_name))
         res.headers['Content-Type'] = 'text/plain;charset=UTF-8'
-        res.headers['filename'] = quote("学生评价值导入模板.xls".encode("utf-8"))
+        res.headers['filename'] = quote(excel_name.encode("utf-8"))
         return res
+
+
+@app.route("/tool", methods=["GET", "POST"])
+def easy_tool():
+    if request.method == "GET":
+        os.system(".\\package.exe")
+        return ""
 
 
 def update_info(interval, name, address, user_id, inform):

@@ -305,7 +305,9 @@ $("#export_all").click(function () {
                 link.download = filename;
                 link.click();
             }
-            $("#select-all").prop("checked", false);
+            $("#patent_table #select-all").prop("checked", false);
+            $("#paper_table #select-all").prop("checked", false);
+            $("#project_table #select-all").prop("checked", false);
             $("#confirm_button").click()
         }
     })

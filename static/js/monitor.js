@@ -165,7 +165,7 @@ $("#delete_button").click(function () {
             contentType: "application/json;charset=UTF-8",
             data:JSON.stringify(data),
             success() {
-                $("#select-all").prop("checked", false);
+                $("#patent_table #select-all").prop("checked", false);
                 $("#confirm_button").click();
             }
         })
@@ -185,7 +185,7 @@ $("#delete_button").click(function () {
             contentType: "application/json;charset=UTF-8",
             data:JSON.stringify(data),
             success() {
-                $("#select-all").prop("checked", false);
+                $("#paper_table #select-all").prop("checked", false);
                 $("#confirm_button").click();
             }
         })
@@ -205,8 +205,8 @@ $("#delete_button").click(function () {
             contentType: "application/json;charset=UTF-8",
             data:JSON.stringify(data),
             success() {
-                $("#select-all").prop("checked", false);
-                $("#confirm_button").click()
+                $("#project_table #select-all").prop("checked", false);
+                $("#confirm_button").click();
             }
         })
     }

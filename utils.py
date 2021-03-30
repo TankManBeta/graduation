@@ -9,6 +9,12 @@ import requests
 import json, time, re, jieba
 from selenium import webdriver, common
 from threading import Thread, Event
+import cv2
+import os
+from PIL import ImageGrab
+from tkinter import Tk, Menu, Text, END
+from aip import AipOcr
+from ctypes import windll
 
 
 class PaperCrawler:
@@ -311,11 +317,100 @@ def split_words(para):
     return candidate_list
 
 
+# 截图
+def cut():
+    global img
+    screen_cut()
+    img = cv2.imread('screen.jpg')
+    cv2.namedWindow('image')
+    cv2.setMouseCallback('image', on_mouse)
+    cv2.imshow('image', img)
+    cv2.waitKey(0)
+    os.remove('screen.jpg')
+
+
+# 截取整个屏幕
+def screen_cut():
+    image = ImageGrab.grab()
+    image.save("screen.jpg")
+
+
+# 根据鼠标事件进行裁剪
+def on_mouse(event, x, y, flags, param):
+    global img, point1, point2
+    img2 = img.copy()
+    # 左键点击
+    if event == cv2.EVENT_LBUTTONDOWN:
+        point1 = (x, y)
+        cv2.circle(img2, point1, 10, (0, 255, 0), 5)
+        cv2.imshow('image', img2)
+    # 按住左键拖曳
+    elif event == cv2.EVENT_MOUSEMOVE and (flags & cv2.EVENT_FLAG_LBUTTON):
+        cv2.rectangle(img2, point1, (x, y), (255, 0, 0), 5)
+        cv2.imshow('image', img2)
+    # 左键释放
+    elif event == cv2.EVENT_LBUTTONUP:
+        point2 = (x, y)
+        cv2.rectangle(img2, point1, point2, (0, 0, 255), 5)
+        cv2.imshow('image', img2)
+        min_x = min(point1[0], point2[0])
+        min_y = min(point1[1], point2[1])
+        width = abs(point1[0] - point2[0])
+        height = abs(point1[1] - point2[1])
+        cut_img = img[min_y:min_y+height, min_x:min_x+width]
+        if not os.path.exists(".\\photos"):
+            os.makedirs('.\\photos')
+        path = '.\\photos\\cut.png'
+        new_text.delete(0.0, END)
+        cv2.imwrite(path, cut_img)
+        get_text_by_ocr(path)
+        new_text.insert("insert", text)
+        cv2.waitKey(1000)
+        cv2.destroyAllWindows()
+
+
+# 图片识别成文字
+def get_text_by_ocr(path):
+    global text
+    client = AipOcr(APP_ID, APP_KEY, SECRET_KEY)
+    with open(path, 'rb') as f:
+        image = f.read()
+        all_data = client.basicAccurate(image)
+        text = ""
+        for i in range(0, all_data["words_result_num"]):
+            text += all_data["words_result"][i]["words"]
+
+
+# 让python指导我们看到的尺寸
+user32 = windll.user32
+user32.SetProcessDPIAware()
+# 主窗体
+root = Tk()
+root.wm_attributes('-topmost', 1)
+root.title("文字识别")
+root.geometry("300x100")
+root.resizable(width=False, height=False)
+new_menu = Menu(root)
+new_menu.add_command(label="开始识别", command=cut)
+new_text = Text(root, show=None)
+new_text.place(width=300, height=100)
+root["menu"] = new_menu
+# 识别之后的结果
+text = ""
+# 文字识别所用的账号信息
+APP_ID = "23891095"
+APP_KEY = "fzTK5eStvxByKGRynEwO4DOZ"
+SECRET_KEY = "Y2XDUgYOO8iuhSei6lluFKRDIBQWmsfi"
+
+
 # if __name__ == "__main__":
-    # patent_crawler = PatentCrawler("陈晓江", "西北大学")
-    # data2 = patent_crawler.get_data()
-    # paper_crawler = PaperCrawler("王薇", "西北大学信息科学与技术学院")
-    # data1 = paper_crawler.get_data()
-    # paper_crawler.handler_paper_items(data1)
-    # project_crawler = ProjectCrawler("陈晓江", "西北大学")
-    # project_crawler.get_data()
+#     root.mainloop()
+#     patent_crawler = PatentCrawler("陈晓江", "西北大学")
+#     data2 = patent_crawler.get_data()
+#     paper_crawler = PaperCrawler("王薇", "西北大学信息科学与技术学院")
+#     data1 = paper_crawler.get_data()
+#     paper_crawler.handler_paper_items(data1)
+#     project_crawler = ProjectCrawler("陈晓江", "西北大学")
+#     project_crawler.get_data()
+
+

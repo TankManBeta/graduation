@@ -298,41 +298,41 @@
                                 </table>
 
                                 <!-- Modal Popup-->
-                                        <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-                                            <div class="modal-dialog modal-dialog-centered" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="exampleModalCenterTitle">请选择需要导出的信息项</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        <div class="row">
-                                                            <div class="bagger">
-                                                                <div class="col-md-6"></div>
-                                                                <div id="left" class="includer" style="background-color: rgb(161, 211, 169);">
-                                                                    {% if patent_headers %}
-                                                                        {% for item in patent_headers  %}
-                                                                            <div>{{ item }}</div>
-                                                                        {% endfor %}
-                                                                    {% endif %}
-                                                                </div>
-                                                                <div id="right" class="includer" style="background-color: rgb(187, 206, 235);">
-
-                                                                </div>
-                                                                <div class="col-md-6"></div>
+                                    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="exampleModalCenterTitle">请选择需要导出的信息项</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="row">
+                                                        <div class="bagger">
+                                                            <div class="col-md-6"></div>
+                                                            <div id="left" class="includer" style="background-color: rgb(161, 211, 169);">
+                                                                {% if patent_headers %}
+                                                                    {% for item in patent_headers  %}
+                                                                        <div>{{ item }}</div>
+                                                                    {% endfor %}
+                                                                {% endif %}
                                                             </div>
-                                                            <div class="col-md-6" style="text-align: center;"><strong>可选信息项</strong></div>
-                                                            <div class="col-md-6" style="text-align: center;"><strong>已选信息项</strong></div>
-                                                        </div>
-                                                    </div>
+                                                            <div id="right" class="includer" style="background-color: rgb(187, 206, 235);">
 
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                                                            </div>
+                                                            <div class="col-md-6"></div>
+                                                        </div>
+                                                        <div class="col-md-6" style="text-align: center;"><strong>可选信息项</strong></div>
+                                                        <div class="col-md-6" style="text-align: center;"><strong>已选信息项</strong></div>
                                                     </div>
                                                 </div>
+
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                                                </div>
                                             </div>
-                                            <!-- /.col-sm-9 -->
                                         </div>
+                                        <!-- /.col-sm-9 -->
+                                    </div>
                                 <!-- /Modal Popup-->
                                 <!--Export links-->
                                 <nav aria-label="Page navigation example">

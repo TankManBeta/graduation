@@ -413,14 +413,13 @@ APP_KEY = "fzTK5eStvxByKGRynEwO4DOZ"
 SECRET_KEY = "Y2XDUgYOO8iuhSei6lluFKRDIBQWmsfi"
 
 
-# if __name__ == "__main__":
-#     root.mainloop()
-#     patent_crawler = PatentCrawler("陈晓江", "西北大学")
-#     data2 = patent_crawler.get_data()
-#     paper_crawler = PaperCrawler("陈晓江", "西北大学")
-#     data1 = paper_crawler.get_data()
-#     paper_crawler.handler_paper_items(data1)
-#     project_crawler = ProjectCrawler("陈晓江", "西北大学")
-#     project_crawler.get_data()
+if __name__ == "__main__":
+    # patent_crawler = PatentCrawler("陈晓江", "西北大学")
+    # data2 = patent_crawler.get_data()
+    paper_crawler = PaperCrawler("陈晓江", "西北大学")
+    data1 = paper_crawler.get_data()
+    paper_crawler.handler_paper_items(data1)
+    project_crawler = ProjectCrawler("陈晓江", "西北大学")
+    project_crawler.get_data()
 
 

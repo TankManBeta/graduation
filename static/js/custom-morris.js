@@ -103,5 +103,4 @@
             resize: true
         });
     }
-
 })(jQuery);

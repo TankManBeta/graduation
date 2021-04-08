@@ -183,38 +183,44 @@
                                     </div>
 
                                     <div class="form-group col-md-6">
+                                        <label for="paper_authors">（*）论文作者（；隔开）</label>
+                                        <input type="text" class="form-control" id="paper_authors">
+                                    </div>
+                                    <div class="form-group col-md-6">
                                         <label for="paper_keywords">论文关键字（；隔开）</label>
                                         <input type="text" class="form-control" id="paper_keywords">
                                     </div>
+
                                     <div class="form-group col-md-6">
                                         <label for="paper_quote">被引量</label>
                                         <input type="text" class="form-control" id="paper_quote" value="0">
                                     </div>
-
                                     <div class="form-group col-md-6">
                                         <label for="paper_influence">影响因子</label>
                                         <input type="text" class="form-control" id="paper_influence" value="0.00">
                                     </div>
+
                                     <div class="form-group col-md-6">
-                                        <label for="paper_search_type">检索类型</label>
+                                        <label for="paper_search_type">（*）检索类型</label>
                                         <select class="form-control" id="paper_search_type">
 											<option value="SCI1区">SCI1区</option>
 											<option value="SCI2区">SCI2区</option>
 											<option value="SCI3区">SCI3区</option>
                                             <option value="SCI4区">SCI4区</option>
+                                            <option value="EI期刊">EI期刊</option>
+                                            <option value="核心期刊">核心期刊</option>
                                             <option value="其他">其他</option>
 										</select>
                                     </div>
-
                                     <div class="form-group col-md-6">
                                         <label for="paper_press">刊登信息</label>
                                         <input type="text" class="form-control" id="paper_press">
                                     </div>
+
                                     <div class="form-group col-md-6">
                                         <label for="paper_doi">DOI号</label>
                                         <input type="text" class="form-control" id="paper_doi">
                                     </div>
-
                                     <div class="form-group col-md-6">
                                        <label for="author_rank">（*）作者类型</label>
                                         <select class="form-control" id="author_rank">
@@ -225,11 +231,20 @@
                                             <option value="4">其他</option>
 										</select>
                                     </div>
-                                    <div class="form-group col-md-6"></div>
 
-                                    <div class="form-group col-md-6 mb-3">
+                                    <div class="form-group col-md-1 mb-2">
                                         <button type="button" class="btn btn-primary btn-lg" id="new_paper_submit">提交</button>
                                     </div>
+                                    <div class="form-group col-md-1.9 mb-2">
+                                        <button type="button" class="btn btn-info btn-lg" id="new_papers_submit">文件上传</button>
+                                    </div>
+                                    <div class="form-group col-md-2 mb-2">
+                                        <button type="button" class="btn btn-dark btn-lg" id="paper_template_download"><a href="/download/template/paper">下载导入模板</a></button>
+                                    </div>
+
+                                    <input type="file" id="papers_upload" style="display:none" name="file">
+                                    <input type="button" id="papers_confirm" style="display:none">
+
                                 </div>
                             </form>
                             <!-- Alerts-->

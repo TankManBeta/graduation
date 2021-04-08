@@ -6,7 +6,8 @@ $("#new_patent_submit").click(function () {
         "patent_time": $("#patent_time").val(),
         "patent_owner": $("#patent_owner").val(),
         "patent_state": $("#patent_state").val(),
-        "inventor_rank": $("#inventor_rank").val()
+        "inventor_rank": $("#inventor_rank").val(),
+        "patent_inventors": $("#patent_inventors").val()
     };
     $.ajax({
         type: "POST",
@@ -39,7 +40,8 @@ $("#new_paper_submit").click(function () {
         "paper_search_type": $("#paper_search_type").val(),
         "paper_press": $("#paper_press").val(),
         "paper_doi": $("#paper_doi").val(),
-        "author_rank": $("#author_rank").val()
+        "author_rank": $("#author_rank").val(),
+        "paper_authors": $("#paper_authors").val()
     };
     console.log(data);
     $.ajax({
@@ -137,5 +139,117 @@ $("#new_info_submit").click(function () {
                     '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button></div>')
             }
         }
+    })
+});
+
+$("#new_patents_submit").click(function () {
+    $("#patents_upload").click();
+});
+
+$("#patents_upload").on("change", function () {
+    $("#patents_confirm").click();
+});
+
+$("#patents_confirm").click(function () {
+    let fileObj = document.getElementById("patents_upload").files[0];
+    if (typeof(fileObj) == "undefined" || fileObj.size <= 0) {
+        alert("未选择文件,请重试！");
+    }
+    $("#patents_upload").val("");
+    let formFile = new FormData();
+    formFile.append("action", "UploadVMKImagePath");
+    formFile.append("file", fileObj); //加入文件对象
+    $.ajax({
+        url: "/add/patents",
+        data: formFile,
+        type: "POST",
+        dataType: "json",
+        cache: false, //上传文件无需缓存
+        processData: false, //用于对data参数进行序列化处理 这里必须false
+        contentType: false, //必须
+        success: function(result) {
+            if (result === "yes"){
+                $("#new_result_hint").html('<div class="alert alert-success alert-dismissible fade show" role="alert"><strong>文件上传成功!</strong>' +
+                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button></div>')
+            }else {
+                $("#new_result_hint").html('<div class="alert alert-warning alert-dismissible fade show" role="alert"><strong>文件上传失败!</strong>' + result +
+                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button></div>')
+            }
+        },
+    })
+});
+
+$("#new_papers_submit").click(function () {
+    $("#papers_upload").click();
+});
+
+$("#papers_upload").on("change", function () {
+    $("#papers_confirm").click();
+});
+
+$("#papers_confirm").click(function () {
+    let fileObj = document.getElementById("papers_upload").files[0];
+    if (typeof(fileObj) == "undefined" || fileObj.size <= 0) {
+        alert("未选择文件,请重试！");
+    }
+    $("#papers_upload").val("");
+    let formFile = new FormData();
+    formFile.append("action", "UploadVMKImagePath");
+    formFile.append("file", fileObj); //加入文件对象
+    $.ajax({
+        url: "/add/papers",
+        data: formFile,
+        type: "POST",
+        dataType: "json",
+        cache: false, //上传文件无需缓存
+        processData: false, //用于对data参数进行序列化处理 这里必须false
+        contentType: false, //必须
+        success: function(result) {
+            if (result === "yes"){
+                $("#new_result_hint").html('<div class="alert alert-success alert-dismissible fade show" role="alert"><strong>文件上传成功!</strong>' +
+                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button></div>')
+            }else {
+                $("#new_result_hint").html('<div class="alert alert-warning alert-dismissible fade show" role="alert"><strong>文件上传失败!</strong>' + result +
+                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button></div>')
+            }
+        },
+    })
+});
+
+
+$("#new_projects_submit").click(function () {
+    $("#projects_upload").click();
+});
+
+$("#projects_upload").on("change", function () {
+    $("#projects_confirm").click();
+});
+
+$("#projects_confirm").click(function () {
+    let fileObj = document.getElementById("projects_upload").files[0];
+    if (typeof(fileObj) == "undefined" || fileObj.size <= 0) {
+        alert("未选择文件,请重试！");
+    }
+    $("#projects_upload").val("");
+    let formFile = new FormData();
+    formFile.append("action", "UploadVMKImagePath");
+    formFile.append("file", fileObj); //加入文件对象
+    $.ajax({
+        url: "/add/projects",
+        data: formFile,
+        type: "POST",
+        dataType: "json",
+        cache: false, //上传文件无需缓存
+        processData: false, //用于对data参数进行序列化处理 这里必须false
+        contentType: false, //必须
+        success: function(result) {
+            if (result === "yes"){
+                $("#new_result_hint").html('<div class="alert alert-success alert-dismissible fade show" role="alert"><strong>文件上传成功!</strong>' +
+                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button></div>')
+            }else {
+                $("#new_result_hint").html('<div class="alert alert-warning alert-dismissible fade show" role="alert"><strong>文件上传失败!</strong>' + result +
+                    '<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button></div>')
+            }
+        },
     })
 });

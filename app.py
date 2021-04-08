@@ -11,6 +11,7 @@ from werkzeug.security import generate_password_hash
 from urllib.parse import quote
 import openpyxl, shutil, os
 from openpyxl.styles import Alignment, Font
+import xlrd
 
 app = Flask(__name__)
 app.config.from_object(settings)
@@ -251,12 +252,95 @@ def index():
                 "amounts": value
             }
             project_data.append(project_dict)
+
         # 构造总的信息
         preview = [len(patents), len(papers), len(projects)]
         increment = [temp_patent_count.get(datetime.now().year, 0), temp_paper_count.get(datetime.now().year, 0),
                      temp_project_count.get(datetime.now().year, 0)]
+
+        # 构造合作信息
+        # 总的集合
+        cooperate_dict = {}
+        # 获取申请过的所有专利
+        patent_id_list = db.session.query(Apply).filter(Apply.teacher_id == current_user.user_id).with_entities(
+            Apply.patent_id, Apply.patent_type).all()
+        # 获取这些专利的申请人
+        if len(patent_id_list) != 0:
+            # 存放每个专利的申请人
+            patent_inventors_list = []
+            for item in patent_id_list:
+                inventors = db.session.query(Patent).filter(
+                    Patent.patent_id == item[0], Patent.patent_type == item[1]).with_entities(Patent.patent_inventors).first()
+                patent_inventors_list.append(inventors[0])
+            # 做一些处理
+            inventors_str = ' '.join(patent_inventors_list).replace('；', ';').replace(';', ' ')
+            # 处理后的所有发明人的集合
+            inventors_after = re.sub(' +', ' ', inventors_str).split(' ')
+            # 开始计数
+            for i in inventors_after:
+                # 如果结果集合中不存在该发明人,则新建一个
+                cooperate_dict[i] = cooperate_dict.get(i, {})
+                cooperate_dict[i]["patents"] = cooperate_dict[i].get("patents", 0) + 1
+                cooperate_dict[i]["papers"] = cooperate_dict[i].get("papers", 0)
+                cooperate_dict[i]["projects"] = cooperate_dict[i].get("projects", 0)
+                cooperate_dict[i]["total"] = cooperate_dict[i].get("total", 0) + 1
+        # 获取所有发表过的论文
+        paper_id_list = db.session.query(Deliver).filter(Deliver.teacher_id == current_user.user_id).with_entities(
+            Deliver.paper_id).all()
+        # 获取每篇论文的作者
+        if len(paper_id_list) != 0:
+            # 存放每篇论文的作者
+            paper_authors_list = []
+            for item in paper_id_list:
+                authors = db.session.query(Paper).filter(Paper.paper_id == item[0]).with_entities(Paper.paper_authors).first()
+                paper_authors_list.append(authors[0])
+            # 做一些处理
+            authors_str = ' '.join(paper_authors_list).replace('；', ';').replace(';', ' ')
+            # 处理后的所有论文作者的集合
+            authors_after = re.sub(' +', ' ', authors_str).split(' ')
+            # 开始计数
+            for i in authors_after:
+                # 如果结果集合中不存在该作者,则新建一个
+                cooperate_dict[i] = cooperate_dict.get(i, {})
+                cooperate_dict[i]["patents"] = cooperate_dict[i].get("patents", 0)
+                cooperate_dict[i]["papers"] = cooperate_dict[i].get("papers", 0) + 1
+                cooperate_dict[i]["projects"] = cooperate_dict[i].get("projects", 0)
+                cooperate_dict[i]["total"] = cooperate_dict[i].get("total", 0) + 1
+        # 获取所有参与过的项目
+        project_id_list = db.session.query(Participate).filter(Participate.teacher_id == current_user.user_id
+                                                               ).with_entities(Participate.project_id).all()
+        # 获取每个项目的主持人
+        if len(project_id_list) != 0:
+            # 存放各个项目的主持人
+            project_principal_list = []
+            for item in project_id_list:
+                principal = db.session.query(Project).filter(Project.project_id == item[0]).with_entities(
+                    Project.project_principal).first()
+                project_principal_list.append(principal[0])
+            # 做一些处理
+            principals_str = ' '.join(project_principal_list).replace('；', ';').replace(';', ' ')
+            # 处理后的所有项目主持人的集合
+            principals_after = re.sub(' +', ' ', principals_str).split(' ')
+            # 开始计数
+            for i in principals_after:
+                # 如果结果集合中不存在该项目负责人,则新建一个
+                cooperate_dict[i] = cooperate_dict.get(i, {})
+                cooperate_dict[i]["patents"] = cooperate_dict[i].get("patents", 0)
+                cooperate_dict[i]["papers"] = cooperate_dict[i].get("papers", 0)
+                cooperate_dict[i]["projects"] = cooperate_dict[i].get("projects", 0) + 1
+                cooperate_dict[i]["total"] = cooperate_dict[i].get("total", 0) + 1
+        # 筛选前五个的合作最多的
+        temp_list = []
+        for key in cooperate_dict.keys():
+            temp_dict = {"name": key, "total": cooperate_dict[key]["total"]}
+            temp_list.append(temp_dict)
+        temp_list.sort(key=lambda stu: stu["total"], reverse=True)
+        # 前五个的详细信息
+        all_names = [temp_list[item]["name"] for item in range(1, 5)]
+        all_counts = [cooperate_dict[item] for item in all_names]
+        all_data = [{"name": all_names[i], "value": all_counts[i]} for i in range(0, 4)]
         return render_template("index.html", patent_data=patent_data, project_data=project_data,
-                               paper_data=paper_data, preview=preview, increment=increment)
+                               paper_data=paper_data, preview=preview, increment=increment, all_data=all_data)
 
 
 @app.route("/details", methods=["GET", "POST"])
@@ -268,7 +352,8 @@ def details():
             Apply.teacher_id == current_user.user_id, Apply.patent_type == Patent.patent_type,
             Apply.patent_id == Patent.patent_id).with_entities(Patent.id, Patent.patent_id, Patent.patent_name,
                                                                Patent.patent_type, Patent.patent_owner,
-                                                               Patent.patent_time, Patent.patent_state).all()
+                                                               Patent.patent_time, Patent.patent_state,
+                                                               Patent.patent_inventors).all()
         return render_template("details_1.html", patent_data=patent_data)
     if request.method == "POST":
         data = request.get_json()
@@ -306,7 +391,7 @@ def details():
                         (Apply.teacher_id == current_user.user_id, Apply.patent_id == Patent.patent_id,
                          Patent.patent_type == Apply.patent_type).with_entities\
                         (Patent.id, Patent.patent_id, Patent.patent_name, Patent.patent_type, Patent.patent_owner,
-                         Patent.patent_time, Patent.patent_state).all()
+                         Patent.patent_time, Patent.patent_state, Patent.patent_inventors).all()
                 # 日期都合法
                 elif date_state == 1:
                     patents = db.session.query(Patent, Apply).filter \
@@ -315,21 +400,21 @@ def details():
                          Patent.patent_time < end_date).with_entities(Patent.id, Patent.patent_id,
                                                                       Patent.patent_name, Patent.patent_type,
                                                                       Patent.patent_owner, Patent.patent_time,
-                                                                      Patent.patent_state).all()
+                                                                      Patent.patent_state, Patent.patent_inventors).all()
                 # 截止日期合法
                 elif date_state == 2:
                     patents = db.session.query(Patent, Apply).filter \
                         (Apply.teacher_id == current_user.user_id, Apply.patent_id == Patent.patent_id,
                          Patent.patent_type == Apply.patent_type, Patent.patent_time < end_date).with_entities\
                         (Patent.id, Patent.patent_id, Patent.patent_name, Patent.patent_type, Patent.patent_owner,
-                         Patent.patent_time, Patent.patent_state).all()
+                         Patent.patent_time, Patent.patent_state, Patent.patent_inventors).all()
                 # 开始日期合法
                 else:
                     patents = db.session.query(Patent, Apply).filter \
                         (Apply.teacher_id == current_user.user_id, Apply.patent_id == Patent.patent_id,
                          Patent.patent_type == Apply.patent_type, Patent.patent_time > start_date).with_entities\
                         (Patent.id, Patent.patent_id, Patent.patent_name, Patent.patent_type, Patent.patent_owner,
-                         Patent.patent_time, Patent.patent_state).all()
+                         Patent.patent_time, Patent.patent_state, Patent.patent_inventors).all()
             # 获取某个状态的专利信息
             else:
                 # 日期都不合法显示所有信息
@@ -338,7 +423,7 @@ def details():
                         (Apply.teacher_id == current_user.user_id, Apply.patent_id == Patent.patent_id,
                          Patent.patent_type == Apply.patent_type, Patent.patent_state == info_state).with_entities\
                         (Patent.id, Patent.patent_id, Patent.patent_name, Patent.patent_type, Patent.patent_owner,
-                         Patent.patent_time, Patent.patent_state).all()
+                         Patent.patent_time, Patent.patent_state, Patent.patent_inventors).all()
                 # 日期全部合法
                 elif date_state == 1:
                     patents = db.session.query(Patent, Apply).filter \
@@ -346,7 +431,7 @@ def details():
                          Patent.patent_type == Apply.patent_type, Patent.patent_state == info_state,
                          Patent.patent_time > start_date, Patent.patent_time < end_date).with_entities\
                         (Patent.id, Patent.patent_id, Patent.patent_name, Patent.patent_type, Patent.patent_owner,
-                         Patent.patent_time, Patent.patent_state).all()
+                         Patent.patent_time, Patent.patent_state, Patent.patent_inventors).all()
                 # 截止日期合法
                 elif date_state == 2:
                     patents = db.session.query(Patent, Apply).filter \
@@ -354,7 +439,8 @@ def details():
                          Patent.patent_type == Apply.patent_type, Patent.patent_state == info_state,
                          Patent.patent_time < end_date).with_entities(Patent.id, Patent.patent_id, Patent.patent_name,
                                                                       Patent.patent_type, Patent.patent_owner,
-                                                                      Patent.patent_time, Patent.patent_state).all()
+                                                                      Patent.patent_time, Patent.patent_state,
+                                                                      Patent.patent_inventors).all()
                 # 开始日期合法
                 else:
                     patents = db.session.query(Patent, Apply).filter \
@@ -362,14 +448,15 @@ def details():
                          Patent.patent_type == Apply.patent_type, Patent.patent_state == info_state,
                          Patent.patent_time > start_date).with_entities(Patent.id, Patent.patent_id, Patent.patent_name,
                                                                         Patent.patent_type, Patent.patent_owner,
-                                                                        Patent.patent_time, Patent.patent_state).all()
+                                                                        Patent.patent_time, Patent.patent_state,
+                                                                        Patent.patent_inventors).all()
             show_html = ''
             for patent in patents:
                 show_html += '<tr><td><div class="custom-control custom-checkbox"><input class="custom-control-input" '\
                              'type="checkbox" id="' + str(patent[0]) + '"><label class="custom-control-label" for="'\
                              + str(patent[0]) + '"></label></div></td><td>' + patent[1] + '</td><td>' + patent[2] + \
-                             '</td><td>' + patent[3] + '</td><td>' + patent[4] + '</td><td>' + \
-                             patent[5].strftime('%Y-%m-%d') + '</td><td>'
+                             '</td><td>' + patent[3] + '</td><td>' + patent[4] + '</td><td>' + patent[-1] + '</td><td>' \
+                             + patent[5].strftime('%Y-%m-%d') + '</td><td>'
                 if patent[6] == "已公开":
                     show_html += '<span class="badge badge-success">' + patent[6] + '</span></td>' + '</tr>'
                 if patent[6] == "已授权":
@@ -394,7 +481,8 @@ def details():
                                                                      Deliver.paper_id == Paper.paper_id).with_entities(
                         Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
                         Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
+                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state,
+                        Paper.paper_authors).all()
                 # 日期都合法
                 elif date_state == 1:
                     papers = db.session.query(Paper, Deliver).filter(current_user.user_id == Deliver.teacher_id,
@@ -403,7 +491,8 @@ def details():
                                                                      Paper.paper_time > start_date).with_entities(
                         Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
                         Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
+                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state,
+                        Paper.paper_authors).all()
                 # 截止日期合法
                 elif date_state == 2:
                     papers = db.session.query(Paper, Deliver).filter(current_user.user_id == Deliver.teacher_id,
@@ -411,7 +500,8 @@ def details():
                                                                      Paper.paper_time < end_date).with_entities(
                         Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
                         Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
+                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state,
+                        Paper.paper_authors).all()
                 # 开始日期合法
                 else:
                     papers = db.session.query(Paper, Deliver).filter(current_user.user_id == Deliver.teacher_id,
@@ -419,7 +509,8 @@ def details():
                                                                      Paper.paper_time > start_date).with_entities(
                         Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
                         Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
+                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state,
+                        Paper.paper_authors).all()
             else:
                 # 日期全部不合法则显示所有信息
                 if date_state == 0:
@@ -428,7 +519,8 @@ def details():
                                                                      Paper.paper_state == info_state).with_entities(
                         Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
                         Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
+                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state,
+                        Paper.paper_authors).all()
                 # 日期都合法
                 elif date_state == 1:
                     papers = db.session.query(Paper, Deliver).filter(current_user.user_id == Deliver.teacher_id,
@@ -438,7 +530,8 @@ def details():
                                                                      Paper.paper_state == info_state).with_entities(
                         Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
                         Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
+                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state,
+                        Paper.paper_authors).all()
                 # 截止日期合法
                 elif date_state == 2:
                     papers = db.session.query(Paper, Deliver).filter(current_user.user_id == Deliver.teacher_id,
@@ -447,7 +540,8 @@ def details():
                                                                      Paper.paper_state == info_state).with_entities(
                         Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
                         Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
+                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state,
+                        Paper.paper_authors).all()
                 # 开始日期合法
                 else:
                     papers = db.session.query(Paper, Deliver).filter(current_user.user_id == Deliver.teacher_id,
@@ -456,15 +550,16 @@ def details():
                                                                      Paper.paper_state == info_state).with_entities(
                         Paper.id, Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time,
                         Paper.paper_region, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence,
-                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state).all()
+                        Paper.paper_search_type, Paper.paper_press, Paper.paper_doi, Paper.paper_state,
+                        Paper.paper_authors).all()
             show_html = ''
             for paper in papers:
                 show_html += '<tr><td><div class="custom-control custom-checkbox"><input class="custom-control-input" '\
                              'type="checkbox" id="' + str(paper[0]) + '"><label class="custom-control-label" for="'\
                              + str(paper[0]) + '"></label></div></td><td>' + paper[1] + '</td><td>' + paper[2] + \
-                             '</td><td>' + paper[3] + '</td><td>' + paper[4].strftime('%Y-%m-%d') + '</td><td>' \
-                             + paper[6] + '</td><td>' + str(paper[7]) + '</td><td>' + \
-                             str(paper[8]) + '</td><td>' + paper[9] + '</td><td>'
+                             '</td><td>' + paper[3] + '</td><td>' + paper[-1] + "</td><td>" + \
+                             paper[4].strftime('%Y-%m-%d') + '</td><td>' + paper[6] + '</td><td>' + str(paper[7]) \
+                             + '</td><td>' + str(paper[8]) + '</td><td>' + paper[9] + '</td><td>'
                 if paper[12] == "已投递":
                     show_html += '<span class="badge badge-success">' + paper[12] + '</span></td>' + '</tr>'
                 if paper[12] == "已审核":
@@ -665,7 +760,8 @@ def update_manual():
             Apply.teacher_id == current_user.user_id, Apply.patent_type == Patent.patent_type,
             Apply.patent_id == Patent.patent_id).with_entities(Patent.id, Patent.patent_id, Patent.patent_name,
                                                                Patent.patent_type, Patent.patent_owner,
-                                                               Patent.patent_time, Patent.patent_state).all()
+                                                               Patent.patent_time, Patent.patent_state,
+                                                               Patent.patent_inventors).all()
         return render_template("details_3.html", patent_data=patent_data)
 
 
@@ -675,17 +771,18 @@ def modify_patent(patent_id):
     if request.method == "GET":
         patent_info = db.session.query(Patent).filter(Patent.id == patent_id).with_entities(
             Patent.patent_id, Patent.patent_name, Patent.patent_type, Patent.patent_state, Patent.patent_time,
-            Patent.patent_owner).first()
+            Patent.patent_owner, Patent.patent_inventors).first()
         if len(patent_info) != 0:
             teacher_apply_info = db.session.query(Apply).filter(Apply.patent_id == patent_info[0], Apply.teacher_id ==
                                                                 current_user.user_id, Apply.patent_type ==
                                                                 patent_info[2]).with_entities(Apply.teacher_type).first()
             data = {"patent_id": patent_info[0], "patent_name": patent_info[1], "patent_type": patent_info[2],
                     "patent_state": patent_info[3], "patent_time": patent_info[4].strftime('%Y-%m-%d'),
-                    "patent_owner": patent_info[5], "inventor_rank": teacher_apply_info[0]}
+                    "patent_owner": patent_info[5], "inventor_rank": teacher_apply_info[0],
+                    'patent_inventors': patent_info[-1]}
         else:
             data = {"patent_id": "", "patent_name": "", "patent_type": "", "patent_state": "", "patent_time": "",
-                    "patent_owner": "", "inventor_rank": ""}
+                    "patent_owner": "", "inventor_rank": "", "patent_inventors": ""}
         return render_template("modify_patent.html", patent_data=data)
     if request.method == "POST":
         data = request.get_json()
@@ -715,7 +812,7 @@ def modify_paper(paper_id):
         paper_info = db.session.query(Paper).filter(Paper.id == paper_id).with_entities(
             Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_region, Paper.paper_time,
             Paper.paper_state, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence, Paper.paper_search_type,
-            Paper.paper_doi).first()
+            Paper.paper_doi, Paper.paper_authors).first()
         if len(paper_info) != 0:
             author_rank = db.session.query(Deliver).filter(Deliver.paper_id == paper_info[0], Deliver.teacher_id ==
                                                            current_user.user_id).with_entities(Deliver.teacher_type).first()
@@ -723,13 +820,14 @@ def modify_paper(paper_id):
                 "paper_id": paper_info[0], "paper_name": paper_info[1], "paper_source": paper_info[2],
                 "paper_region": paper_info[3], "paper_time": paper_info[4], "paper_state": paper_info[5],
                 "paper_keywords": paper_info[6], "paper_quote": paper_info[7], "paper_influence": paper_info[8],
-                "paper_search_type": paper_info[9], "paper_doi": paper_info[10], "author_rank": author_rank[0]
+                "paper_search_type": paper_info[9], "paper_doi": paper_info[10], "author_rank": author_rank[0],
+                "paper_authors": paper_info[-1]
             }
         else:
             data = {
                 "paper_id": "", "paper_name": "", "paper_source": "", "paper_region": "", "paper_time": "",
                 "paper_state": "", "paper_keywords": "", "paper_quote": "", "paper_influence": "",
-                "paper_search_type": "", "paper_doi": "", "author_rank": ""
+                "paper_search_type": "", "paper_doi": "", "author_rank": "", "paper_authors": ""
             }
         return render_template("modify_paper.html", paper_data=data)
     if request.method == "POST":
@@ -815,6 +913,7 @@ def add_patent():
         return render_template("add_patent.html")
     if request.method == "POST":
         data = request.get_json()
+        print(data)
         patent_id = data["patent_id"]
         patent_name = data["patent_name"]
         patent_type = data["patent_type"]
@@ -822,15 +921,17 @@ def add_patent():
         patent_owner = data["patent_owner"]
         patent_state = data["patent_state"]
         inventor_rank = data["inventor_rank"]
+        patent_inventors = data["patent_inventors"]
+        patent_inventors = patent_inventors.replace('；', ';').replace(' ', '')
         if patent_id.strip() == "" or patent_name.strip() == "" or patent_time.strip() == "" or patent_owner.strip() \
-                == "":
+                == "" or patent_inventors.strip() == "":
             msg = "信息填写不完整"
         else:
             patent_in = db.session.query(Patent).filter(Patent.patent_id == patent_id, Patent.patent_type ==
                                                         patent_type).first()
             if patent_in is None:
                 new_patent = Patent(patent_id, patent_name, patent_owner, parse(patent_time), patent_state, patent_type,
-                                    current_user.user_name)
+                                    patent_inventors)
                 db.session.add(new_patent)
                 db.session.commit()
                 new_apply = Apply(current_user.user_id, patent_id, patent_type, int(inventor_rank))
@@ -863,6 +964,7 @@ def add_paper():
         return render_template("add_paper.html")
     if request.method == "POST":
         data = request.get_json()
+        print(data)
         paper_id = data["paper_id"]
         paper_name = data["paper_name"]
         paper_source = data["paper_source"]
@@ -870,14 +972,17 @@ def add_paper():
         paper_time = data["paper_time"]
         paper_state = data["paper_state"]
         paper_keywords = data["paper_keywords"]
+        paper_keywords = paper_keywords.replace("；", ";").replace(" ", "")
         paper_quote = data["paper_quote"]
         paper_influence = data["paper_influence"]
         paper_search_type = data["paper_search_type"]
         paper_press = data["paper_press"]
         paper_doi = data["paper_doi"]
         author_rank = data["author_rank"]
+        paper_authors = data["paper_authors"]
+        paper_authors = paper_authors.replace("；", ";").replace(" ", "")
         if paper_id.strip() == "" or paper_name.strip() == "" or paper_source.strip() == "" or paper_time.strip() == "" \
-                or paper_region.strip() == "":
+                or paper_region.strip() == "" or paper_authors.strip() == "":
             msg = "信息填写不完整"
         else:
             try:
@@ -885,8 +990,9 @@ def add_paper():
                 paper_influence = float(paper_influence)
                 paper_in = db.session.query(Paper).filter(Paper.paper_id == paper_id).first()
                 if paper_in is None:
-                    new_paper = Paper(paper_id, paper_name, paper_source, parse(paper_time), paper_region, paper_keywords,
-                                      paper_influence, paper_quote, paper_press, paper_search_type, paper_doi, paper_state)
+                    new_paper = Paper(paper_id, paper_name, paper_source, parse(paper_time), paper_region,
+                                      paper_keywords, paper_influence, paper_quote, paper_press, paper_search_type,
+                                      paper_doi, paper_state, paper_authors)
                     db.session.add(new_paper)
                     db.session.commit()
                     new_deliver = Deliver(current_user.user_id, paper_id, int(author_rank))
@@ -1061,7 +1167,8 @@ def export_special():
             Apply.teacher_id == current_user.user_id, Apply.patent_type == Patent.patent_type,
             Apply.patent_id == Patent.patent_id).with_entities(Patent.id, Patent.patent_id, Patent.patent_name,
                                                                Patent.patent_type, Patent.patent_owner,
-                                                               Patent.patent_time, Patent.patent_state).all()
+                                                               Patent.patent_time, Patent.patent_state,
+                                                               Patent.patent_inventors).all()
         patent_headers = ["专利权人", "发明人", "专利号", "专利名称", "专利状态", "时间", "专利类型"]
         return render_template("special_export.html", patent_data=patent_data, patent_headers=patent_headers)
     if request.method == "POST":
@@ -1100,7 +1207,7 @@ def export_special():
                 optional_headers = ["专利权人", "发明人", "专利号", "专利名称", "专利状态", "时间", "专利类型"]
         # 导出论文信息
         elif data["export_type"] == 1:
-            headers = ["论文编号", "论文名称", "论文来源", "发表时间", "机构地区", "关键词", "刊登信息", "检索类型", "被引量", "影响因子", "doi号", "论文状态"]
+            headers = ["论文编号", "论文名称", "论文来源", "论文作者", "发表时间", "机构地区", "关键词", "刊登信息", "检索类型", "被引量", "影响因子", "doi号", "论文状态"]
             # 用于存放最后的结果
             data_list = []
             if len(export_lists) != 0:
@@ -1108,11 +1215,11 @@ def export_special():
                     source_data = db.session.query(Paper).filter(Paper.id == i).with_entities(
                         Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time, Paper.paper_region,
                         Paper.paper_keywords, Paper.paper_press, Paper.paper_search_type, Paper.paper_quote,
-                        Paper.paper_influence, Paper.paper_doi, Paper.paper_state).first()
+                        Paper.paper_influence, Paper.paper_doi, Paper.paper_state, Paper.paper_authors).first()
                     # 转化时间，浮点数
-                    new_data = [source_data[0], source_data[1], source_data[2], source_data[3].strftime("%Y-%m-%d"),
-                                source_data[4], source_data[5], source_data[6], source_data[7], source_data[8],
-                                float(source_data[9]), source_data[10], source_data[11]]
+                    new_data = [source_data[0], source_data[1], source_data[2], source_data[-1],
+                                source_data[3].strftime("%Y-%m-%d"), source_data[4], source_data[5], source_data[6],
+                                source_data[7], source_data[8], float(source_data[9]), source_data[10], source_data[11]]
                     # 导出所有项
                     if len(optional_headers) == 0:
                         data_list.append(new_data)
@@ -1124,7 +1231,7 @@ def export_special():
                             final_data.append(new_data[headers.index(item)])
                         data_list.append(final_data)
             if len(optional_headers) == 0:
-                optional_headers = ["论文编号", "论文名称", "论文来源", "发表时间", "机构地区", "关键词", "刊登信息", "检索类型", "被引量", "影响因子", "doi号", "论文状态"]
+                optional_headers = ["论文编号", "论文名称", "论文来源", "论文作者", "发表时间", "机构地区", "关键词", "刊登信息", "检索类型", "被引量", "影响因子", "doi号", "论文状态"]
         # 导出项目信息
         else:
             headers = ["项目编号", "项目名称", "项目来源", "项目类型", "时间", "项目状态", "主持人", "主持人职称"]
@@ -1174,11 +1281,11 @@ def export_special():
         now_time = datetime.now().strftime("%Y-%m-%d-%H-%M-%S").replace('-', '')
         excel_name = current_user.user_name + '_' + now_time + '_'
         if data["export_type"] == 0:
-            excel_name = excel_name + "专利信息.xls"
+            excel_name = excel_name + "专利信息.xlsx"
         elif data["export_type"] == 1:
-            excel_name = excel_name + "论文信息.xls"
+            excel_name = excel_name + "论文信息.xlsx"
         else:
-            excel_name = excel_name + "项目信息.xls"
+            excel_name = excel_name + "项目信息.xlsx"
         new_excel.save(".\\files\\" + excel_name)
         new_excel.close()
         res = make_response(send_from_directory(".\\files", excel_name))
@@ -1195,6 +1302,358 @@ def easy_tool():
     if request.method == "POST":
         os.system(".\\package.exe")
         return ""
+
+
+@app.route("/download/template/patent", methods=["GET", "POST"])
+@login_required
+def download_patent_template():
+    if request.method == "GET":
+        try:
+            response = make_response(send_from_directory(".\\import_templates", "专利信息导入模板.xlsx", as_attachment=True))
+            response.headers['Content-Type'] = 'text/plain;charset=UTF-8'
+            return response
+        except:
+            return redirect(url_for("download_patent_template"))
+
+
+@app.route("/download/template/paper", methods=["GET", "POST"])
+@login_required
+def download_paper_template():
+    if request.method == "GET":
+        try:
+            response = make_response(send_from_directory(".\\import_templates", "论文信息导入模板.xlsx", as_attachment=True))
+            response.headers['Content-Type'] = 'text/plain;charset=UTF-8'
+            return response
+        except:
+            return redirect(url_for("download_paper_template"))
+
+
+@app.route("/download/template/project", methods=["GET", "POST"])
+@login_required
+def download_project_template():
+    if request.method == "GET":
+        try:
+            response = make_response(send_from_directory(".\\import_templates", "项目信息导入模板.xlsx", as_attachment=True))
+            response.headers['Content-Type'] = 'text/plain;charset=UTF-8'
+            return response
+        except:
+            return redirect(url_for("download_project_template"))
+
+
+FILE_SAVE_PATH = ".\\import_files"
+
+
+@app.route("/add/patents", methods=["GET", "POST"])
+@login_required
+def add_patents():
+    if request.method == "POST":
+        file = request.files.get('file')  # 获取文件
+        if file:
+            filename = file.filename
+            if filename.split('.')[-1] in ["xls", "xlsx"]:
+                # 用时间戳给文件命名
+                now_time = datetime.now().strftime("%Y-%m-%d-%H-%M-%S").replace('-', '')
+                file_path = FILE_SAVE_PATH + "\\" + now_time + '_' + filename
+                file.save(file_path)
+                wb = xlrd.open_workbook(file_path)
+                sheet = wb.sheets()[0]
+                max_rows = sheet.nrows
+                # 获取表头
+                headers = sheet.row_values(0)
+                # 存放需要写入数据库的数据
+                data_list = []
+                # 存放上传文件中出错的行
+                error_list = []
+                # 确定上传的是专利信息
+                if "（*）专利编号" in headers:
+                    for i in range(1, max_rows):
+                        try:
+                            row_data = sheet.row_values(i)
+                            # 判断信息是否完全
+                            for item in row_data:
+                                try:
+                                    if item.strip() == "":
+                                        msg = "上传的信息不完整！"
+                                        return jsonify(msg)
+                                except AttributeError:
+                                    continue
+                            # 处理发明人
+                            new_column_3 = row_data[3].replace('；', ';').replace(' ', '')
+                            # 处理时间
+                            new_column_5 = xlrd.xldate.xldate_as_datetime(row_data[5], 0)
+                            # 处理发明人排名
+                            if row_data[7] == "第一发明人":
+                                new_column_7 = 0
+                            elif row_data[7] == "第二发明人":
+                                new_column_7 = 1
+                            elif row_data[7] == "第三发明人":
+                                new_column_7 = 2
+                            elif row_data[7] == "第四发明人":
+                                new_column_7 = 3
+                            else:
+                                new_column_7 = 4
+                            row_data = [row_data[0], row_data[1], row_data[2], new_column_3, row_data[4], new_column_5,
+                                        row_data[6], new_column_7]
+                            data_list.append(row_data)
+                        # 日期不匹配
+                        except TypeError:
+                            # 数据有错误就放入记录错误所在行数的列表中
+                            error_list.append(str(i+1))
+                            continue
+                    # 上传的文件中有错误
+                    if len(error_list) != 0:
+                        msg = "第" + '、'.join(error_list) + "行数据有错误"
+                    # 上传的数据没错误
+                    else:
+                        for item in data_list:
+                            # 判断该专利信息是否已经存在
+                            patent_in = db.session.query(Patent).filter(Patent.patent_id == item[0],
+                                                                        Patent.patent_type == item[4]).first()
+                            # 专利信息不存在，则将专利信息存入Patent表，并在Apply表存放一条对应关系
+                            if patent_in is None:
+                                new_patent = Patent(item[0], item[1], item[2], item[5], item[6], item[4], item[3])
+                                db.session.add(new_patent)
+                                db.session.commit()
+                                new_apply = Apply(current_user.user_id, item[0], item[4], item[7])
+                                db.session.add(new_apply)
+                                db.session.commit()
+                            # 专利信息已经存在,则查询Apply表中的对应关系是否存在
+                            else:
+                                apply_in = db.session.query(Apply).filter(Apply.teacher_id == current_user.user_id,
+                                                                          Apply.patent_id == item[0],
+                                                                          Apply.patent_type == item[4]).first()
+                                # 若对应关系不存在则加入
+                                if apply_in is None:
+                                    new_apply = Apply(current_user.user_id, item[0], item[4], item[7])
+                                    db.session.add(new_apply)
+                                    db.session.commit()
+                                # 对应关系已存在
+                                else:
+                                    continue
+                        msg = "yes"
+                else:
+                    msg = "上传的文件模板不正确！"
+                # 将文件删除
+                os.remove(file_path)
+            else:
+                msg = "上传的文件格式不正确！"
+        else:
+            msg = "文件不存在！"
+        return jsonify(msg)
+
+
+@app.route("/add/papers", methods=["GET", "POST"])
+@login_required
+def add_papers():
+    if request.method == "POST":
+        file = request.files.get('file')  # 获取文件
+        if file:
+            filename = file.filename
+            if filename.split('.')[-1] in ["xls", "xlsx"]:
+                # 用时间戳给文件命名
+                now_time = datetime.now().strftime("%Y-%m-%d-%H-%M-%S").replace('-', '')
+                file_path = FILE_SAVE_PATH + "\\" + now_time + '_' + filename
+                file.save(file_path)
+                wb = xlrd.open_workbook(file_path)
+                sheet = wb.sheets()[0]
+                max_rows = sheet.nrows
+                # 获取表头
+                headers = sheet.row_values(0)
+                # 存放需要写入数据库的数据
+                data_list = []
+                # 存放上传文件中出错的行
+                error_list = []
+                if "（*）论文编号" in headers:
+                    for i in range(1, max_rows):
+                        try:
+                            row_data = sheet.row_values(i)
+                            # 判断必要信息是否完整
+                            for j in range(0, 9):
+                                try:
+                                    if row_data[j].strip() == "":
+                                        msg = "上传的信息不完整！"
+                                        return jsonify(msg)
+                                except AttributeError:
+                                    continue
+                            # 处理论文作者
+                            new_column_3 = row_data[3].replace('；', ';').replace(' ', '')
+                            # 处理时间
+                            new_column_4 = xlrd.xldate.xldate_as_datetime(row_data[4], 0)
+                            # 处理论文作者排名
+                            if row_data[8] == "通讯作者":
+                                new_column_8 = 0
+                            elif row_data[8] == "第一作者":
+                                new_column_8 = 1
+                            elif row_data[8] == "第二作者":
+                                new_column_8 = 2
+                            elif row_data[8] == "第三作者":
+                                new_column_8 = 3
+                            else:
+                                new_column_8 = 4
+                            # 处理关键词
+                            new_column_9 = row_data[9].replace('；', ';').replace(' ', '')
+                            # 处理被引量
+                            if isinstance(row_data[11], str):
+                                # 如果为空，默认值设为0
+                                if row_data[11].replace(' ', '') == '':
+                                    new_column_11 = 0
+                                # 否则就是有错误
+                                else:
+                                    error_list.append(str(i+1))
+                                    continue
+                            else:
+                                new_column_11 = int(row_data[11])
+                            # 处理影响因子
+                            if isinstance(row_data[12], str):
+                                # 如果为空，默认值设为0
+                                if row_data[12].replace(' ', '') == '':
+                                    new_column_12 = 0.0
+                                # 否则就是有错误
+                                else:
+                                    error_list.append(str(i+1))
+                                    continue
+                            else:
+                                new_column_12 = row_data[12]
+                            # 需要存放进数据库的数据
+                            row_data = [row_data[0], row_data[1], row_data[2], new_column_3, new_column_4, row_data[5],
+                                        row_data[6], row_data[7], new_column_8, new_column_9, row_data[10],
+                                        new_column_11, new_column_12, row_data[13]]
+                            data_list.append(row_data)
+                        # 日期错误
+                        except TypeError:
+                            # 数据有错误就放入记录错误所在行数的列表中
+                            error_list.append(str(i+1))
+                            continue
+                    # 上传的文件中有错误
+                    if len(error_list) != 0:
+                        msg = "第" + '、'.join(error_list) + "行数据有错误！"
+                    # 上传的数据没错误
+                    else:
+                        for item in data_list:
+                            # 判断该论文信息是否已经存在
+                            paper_in = db.session.query(Paper).filter(Paper.paper_id == item[0]).first()
+                            # 论文信息不存在，则将论文信息存入Paper表，并在Deliver表存放一条对应关系
+                            if paper_in is None:
+                                new_paper = Paper(item[0], item[1], item[2], item[4], item[5], item[9], item[12],
+                                                  item[11], item[10], item[6], item[13], item[7], item[3])
+                                db.session.add(new_paper)
+                                db.session.commit()
+                                new_deliver = Deliver(current_user.user_id, item[0], item[8])
+                                db.session.add(new_deliver)
+                                db.session.commit()
+                            # 论文信息已经存在,则查询Deliver表中的对应关系是否存在
+                            else:
+                                deliver_in = db.session.query(Deliver).filter(Deliver.teacher_id == current_user.user_id,
+                                                                              Deliver.paper_id == item[0]).first()
+                                # 若对应关系不存在则加入
+                                if deliver_in is None:
+                                    new_deliver = Deliver(current_user.user_id, item[0], item[8])
+                                    db.session.add(new_deliver)
+                                    db.session.commit()
+                                # 对应关系已存在
+                                else:
+                                    continue
+                        msg = "yes"
+                else:
+                    msg = "上传的文件模板不正确！"
+                # 将文件删除
+                os.remove(file_path)
+            else:
+                msg = "上传的文件格式不正确！"
+        else:
+            msg = "文件不存在！"
+        return jsonify(msg)
+
+
+@app.route("/add/projects", methods=["GET", "POST"])
+@login_required
+def add_projects():
+    if request.method == "POST":
+        file = request.files.get('file')  # 获取文件
+        if file:
+            filename = file.filename
+            if filename.split('.')[-1] in ["xls", "xlsx"]:
+                # 用时间戳给文件命名
+                now_time = datetime.now().strftime("%Y-%m-%d-%H-%M-%S").replace('-', '')
+                file_path = FILE_SAVE_PATH + "\\" + now_time + '_' + filename
+                file.save(file_path)
+                wb = xlrd.open_workbook(file_path)
+                sheet = wb.sheets()[0]
+                max_rows = sheet.nrows
+                # 获取表头
+                headers = sheet.row_values(0)
+                # 存放需要写入数据库的数据
+                data_list = []
+                # 存放上传文件中出错的行
+                error_list = []
+                if "（*）项目编号" in headers:
+                    for i in range(1, max_rows):
+                        try:
+                            row_data = sheet.row_values(i)
+                            # 判断必要信息是否完整
+                            for j in range(0, 8):
+                                try:
+                                    if row_data[j].strip() == "":
+                                        msg = "上传的信息不完整！"
+                                        return jsonify(msg)
+                                except AttributeError:
+                                    continue
+                            # 处理时间
+                            new_column_4 = xlrd.xldate.xldate_as_datetime(row_data[4], 0)
+                            # 处理参与类型
+                            if row_data[6] == current_user.user_name:
+                                new_column_8 = 0
+                            else:
+                                new_column_8 = 1
+                            # 需要存放进数据库的数据
+                            row_data = [row_data[0], row_data[1], row_data[2], row_data[3], new_column_4, row_data[5],
+                                        row_data[6], row_data[7], new_column_8]
+                            data_list.append(row_data)
+                        # 日期错误
+                        except TypeError:
+                            # 数据有错误就放入记录错误所在行数的列表中
+                            error_list.append(str(i + 1))
+                            continue
+                    # 上传的文件中有错误
+                    if len(error_list) != 0:
+                        msg = "第" + '、'.join(error_list) + "行数据有错误！"
+                    # 上传的数据没错误
+                    else:
+                        for item in data_list:
+                            # 判断该项目信息是否已经存在
+                            project_in = db.session.query(Project).filter(Project.project_id == item[0]).first()
+                            # 项目信息不存在，则将论文信息存入Project表，并在Participate表存放一条对应关系
+                            if project_in is None:
+                                new_project = Project(item[0], item[1], item[3], item[2], item[5], item[6], item[7],
+                                                      item[4])
+                                db.session.add(new_project)
+                                db.session.commit()
+                                new_participate = Participate(current_user.user_id, item[0], item[8])
+                                db.session.add(new_participate)
+                                db.session.commit()
+                            # 项目信息已经存在,则查询Participate表中的对应关系是否存在
+                            else:
+                                project_in = db.session.query(Participate).filter(
+                                    Participate.teacher_id == current_user.user_id,
+                                    Participate.project_id == item[0]).first()
+                                # 若对应关系不存在则加入
+                                if project_in is None:
+                                    new_participate = Participate(current_user.user_id, item[0], item[8])
+                                    db.session.add(new_participate)
+                                    db.session.commit()
+                                # 对应关系已存在
+                                else:
+                                    continue
+                        msg = "yes"
+                else:
+                    msg = "上传的文件模板不正确！"
+                # 将文件删除
+                os.remove(file_path)
+            else:
+                msg = "上传的文件格式不正确！"
+        else:
+            msg = "文件不存在！"
+        return jsonify(msg)
 
 
 def update_info(interval, name, address, user_id, inform):
@@ -1232,14 +1691,15 @@ def get_papers(name, address, user_id, inform):
         paper_publish_time = parse(paper_publish_time)
         paper_keywords = item["keywords"]
         author_rank = item["author_rank"]
+        authors = item["authors"]
         # 检查论文是否已经存在
         paper_in = db.session.query(Paper).filter(Paper.paper_id == paper_id).with_entities(
             Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time, Paper.paper_region,
-            Paper.paper_keywords).all()
+            Paper.paper_keywords, Paper.paper_authors).all()
         # 未存在就插入
         if len(paper_in) == 0:
             paper = Paper(paper_id, paper_name, paper_source, paper_publish_time, address, paper_keywords, 0, 0, "", "",
-                          "", "已发表")
+                          "", "已发表", authors)
             db.session.add(paper)
             db.session.commit()
             # 判断是否是新信息
@@ -1249,15 +1709,16 @@ def get_papers(name, address, user_id, inform):
             # 查找已存在的信息
             exist_data = db.session.query(Paper).filter(Paper.paper_id == paper_id).with_entities\
                 (Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_time, Paper.paper_region,
-                 Paper.paper_keywords).first()
+                 Paper.paper_keywords, Paper.paper_authors).first()
             # 存在一项不一样
             if exist_data[0] != paper_id or exist_data[1] != paper_name or exist_data[2] != paper_source or \
-                    exist_data[3] != paper_publish_time or exist_data[4] != address or exist_data[5] != paper_keywords:
+                    exist_data[3] != paper_publish_time or exist_data[4] != address or exist_data[5] != paper_keywords\
+                    or exist_data[-1] != authors:
                 in_data = db.session.query(Paper).filter(Paper.paper_id == paper_id).first()
                 db.session.delete(in_data)
                 db.session.commit()
                 paper = Paper(paper_id, paper_name, paper_source, paper_publish_time, address, paper_keywords, 0, 0, "",
-                              "", "", "已发表")
+                              "", "", "已发表", authors)
                 db.session.add(paper)
                 db.session.commit()
                 new_info = "yes"

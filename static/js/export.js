@@ -87,7 +87,7 @@ $("#confirm_button").click(function () {
                     "lengthMenu": [5, 10, 15, 20, 25],
                     "bAutoWidth": false
                 });
-                let paper_headers = ["论文编号", "论文名称", "论文来源", "发表时间", "机构地区", "关键词", "刊登信息", "检索类型", "被引量", "影响因子", "doi号", "论文状态"];
+                let paper_headers = ["论文编号", "论文名称", "论文来源", "论文作者", "发表时间", "机构地区", "关键词", "刊登信息", "检索类型", "被引量", "影响因子", "doi号", "论文状态"];
                 $("#left>div").remove();
                 $("#right>div").remove();
                 for (let i=0; i<paper_headers.length; i++){

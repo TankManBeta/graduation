@@ -12,7 +12,7 @@ from threading import Thread, Event
 import cv2
 import os
 from PIL import ImageGrab
-from tkinter import Tk, Menu, Text, END
+from tkinter import Tk, Menu, Text, END, messagebox
 from aip import AipOcr
 from ctypes import windll
 
@@ -103,6 +103,7 @@ class PaperCrawler:
                 result_dict["source"] = item["source"]
                 result_dict["author_rank"] = authors.index(self.name)
                 result_dict["keywords"] = keywords
+                result_dict["authors"] = ';'.join(authors)
                 print(result_dict)
                 results.append(result_dict)
         print(len(results))
@@ -388,7 +389,16 @@ def get_text_by_ocr(path):
         all_data = client.basicAccurate(image)
         text = ""
         for i in range(0, all_data["words_result_num"]):
-            text += all_data["words_result"][i]["words"]
+            text += all_data["words_result"][i]["words"] + '\n'
+
+
+# 将文字复制到粘贴板
+def copy():
+    global text, root
+    root.clipboard_clear()
+    root.clipboard_append(text)
+    root.update()
+    result = messagebox.showinfo(title='信息提示', message='复制到粘贴板成功')
 
 
 # 让系统知道使用者看到的尺寸
@@ -402,6 +412,7 @@ root.geometry("300x100")
 root.resizable(width=False, height=False)
 new_menu = Menu(root)
 new_menu.add_command(label="开始识别", command=cut)
+new_menu.add_command(label="复制到粘贴板", command=copy)
 new_text = Text(root, show=None)
 new_text.place(width=300, height=100)
 root["menu"] = new_menu
@@ -413,13 +424,14 @@ APP_KEY = "fzTK5eStvxByKGRynEwO4DOZ"
 SECRET_KEY = "Y2XDUgYOO8iuhSei6lluFKRDIBQWmsfi"
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
+    # root.mainloop()
     # patent_crawler = PatentCrawler("陈晓江", "西北大学")
     # data2 = patent_crawler.get_data()
-    paper_crawler = PaperCrawler("陈晓江", "西北大学")
-    data1 = paper_crawler.get_data()
-    paper_crawler.handler_paper_items(data1)
-    project_crawler = ProjectCrawler("陈晓江", "西北大学")
-    project_crawler.get_data()
+    # paper_crawler = PaperCrawler("陈晓江", "西北大学")
+    # data1 = paper_crawler.get_data()
+    # paper_crawler.handler_paper_items(data1)
+    # project_crawler = ProjectCrawler("陈晓江", "西北大学")
+    # project_crawler.get_data()
 
 

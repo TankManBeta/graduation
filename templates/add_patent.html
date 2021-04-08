@@ -176,6 +176,11 @@
                                         <input type="text" class="form-control" id="patent_owner">
                                     </div>
                                     <div class="form-group col-md-6">
+                                        <label for="patent_inventors">（*）专利发明人（；隔开）</label>
+                                        <input type="text" class="form-control" id="patent_inventors">
+                                    </div>
+
+                                    <div class="form-group col-md-6">
                                         <label for="patent_state">（*）专利状态</label>
                                         <select class="form-control" id="patent_state">
 											<option value="已申请" >已申请</option>
@@ -185,7 +190,6 @@
                                             <option value="已公开" >已公开</option>
 										</select>
                                     </div>
-
                                     <div class="form-group col-md-6">
                                         <label for="inventor_rank">（*）发明人类型</label>
                                         <select class="form-control" id="inventor_rank">
@@ -196,11 +200,20 @@
                                             <option value="4">其他</option>
 										</select>
                                     </div>
-                                    <div class="form-group col-md-6"></div>
 
-                                    <div class="form-group col-md-6 mb-3">
+                                    <div class="form-group col-md-1 mb-2">
                                         <button type="button" class="btn btn-primary btn-lg" id="new_patent_submit">提交</button>
                                     </div>
+                                    <div class="form-group col-md-1.9 mb-2">
+                                        <button type="button" class="btn btn-info btn-lg" id="new_patents_submit">文件上传</button>
+                                    </div>
+                                    <div class="form-group col-md-2 mb-2">
+                                        <button type="button" class="btn btn-dark btn-lg" id="patent_template_download"><a href="/download/template/patent">下载导入模板</a></button>
+                                    </div>
+
+                                    <input type="file" id="patents_upload" style="display:none" name="file">
+                                    <input type="button" id="patents_confirm" style="display:none">
+
                                 </div>
                             </form>
                             <!-- Alerts-->

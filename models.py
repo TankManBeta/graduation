@@ -117,9 +117,10 @@ class Paper(db.Model):
     paper_search_type = db.Column(db.String(128), nullable=True)
     paper_doi = db.Column(db.String(128), nullable=True)
     paper_state = db.Column(db.String(128), nullable=True)
+    paper_authors = db.Column(db.String(128), nullable=True)
 
     def __init__(self, paper_id, paper_name, paper_source, paper_time, paper_region, paper_keywords,
-                 paper_influence, paper_quote, paper_press, paper_search_type, paper_doi, paper_state):
+                 paper_influence, paper_quote, paper_press, paper_search_type, paper_doi, paper_state, paper_authors):
         self.paper_id = paper_id
         self.paper_name = paper_name
         self.paper_source = paper_source
@@ -132,6 +133,7 @@ class Paper(db.Model):
         self.paper_search_type = paper_search_type
         self.paper_doi = paper_doi
         self.paper_state = paper_state
+        self.paper_authors = paper_authors
 
     def __repr__(self):
         return "<Paper %r %r>" % (self.paper_id, self.paper_name)

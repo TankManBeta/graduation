@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>科研信息采集与管理系统</title>
+    <!-- Fav  Icon Link -->
+    <link rel="shortcut icon" type="image/png" href="/static/images/fav.png">
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <!-- themify icons CSS -->
+    <link rel="stylesheet" href="/static/css/themify-icons.css">
+    <!-- Animations CSS -->
+    <link rel="stylesheet" href="/static/css/animate.css">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/green.css" id="style_theme">
+    <link rel="stylesheet" href="/static/css/responsive.css">
+    <!-- morris charts -->
+    <link rel="stylesheet" href="/static/charts/css/morris.css">
+    <!-- jvectormap -->
+    <link rel="stylesheet" href="/static/css/jquery-jvectormap.css">
+    <link rel="stylesheet" href="/static/datatable/dataTables.bootstrap4.min.css">
+
+    <script src="/static/js/modernizr.min.js"></script>
+</head>
+
+<body>
+    <!-- Pre Loader -->
+    <div class="loading">
+        <div class="spinner">
+            <div class="double-bounce1"></div>
+            <div class="double-bounce2"></div>
+        </div>
+    </div>
+    <!--/Pre Loader -->
+    <!-- Color Changer -->
+    <div class="theme-settings" id="switcher">
+        <span class="theme-click">
+			<span class="ti-settings"></span>
+        </span>
+        <a id="tool" href="/tool"><span class="ti-light-bulb" style="font-size: 30px"></span></a>
+    </div>
+    <!-- /Color Changer -->
+    <div class="wrapper">
+        <!-- Page Content -->
+        <div id="content">
+
+            <!-- Top Navigation -->
+            <div class="container top-brand">
+                <nav class="navbar navbar-default">
+                    <div class="navbar-header">
+                        <div class="sidebar-header">
+                            <a href="/manage"><img src="/static/images/logo-dark.png" class="logo" alt="logo"></a>
+                        </div>
+                    </div>
+                    <ul class="nav justify-content-end">
+                        <li class="nav-item">
+                            <a class="nav-link">
+                                <span title="全屏" class="ti-fullscreen fullscreen"></span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                                <span class="ti-user"></span>
+                            </a>
+                            <div class="dropdown-menu lochana-box-shadow2 profile animated flipInY">
+                                <h5>{{current_user.user_name}}</h5>
+                                <a class="dropdown-item" href="/logout">
+                                    <span class="ti-power-off"></span> 退出</a>
+                            </div>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+            <!-- /Top Navigation -->
+
+            <!-- Menu -->
+            <div class="container menu-nav">
+                <nav class="navbar navbar-expand-lg lochana-bg text-white">
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+						<span class="ti-menu text-white"></span>
+					</button>
+
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav mr-auto">
+                            <li class="nav-item dropdown active">
+                                <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false"><span class="ti-home"></span> 管理用户信息</a>
+                                <div class="dropdown-menu">
+                                    <a class="dropdown-item" href="/manage">管理用户信息</a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+            <!-- /Menu -->
+
+            <!-- Breadcrumb -->
+            <!-- Page Title -->
+            <div class="container mt-0">
+                <div class="row breadcrumb-bar">
+                    <div class="col-md-6">
+                        <h3 class="block-title">用户信息</h3>
+                    </div>
+                    <div class="col-md-6">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item">
+                                <a href="/manage">
+                                    <span class="ti-home"></span>
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item">管理用户信息</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+            <!-- /Page Title -->
+
+            <!-- /Breadcrumb -->
+            <!-- Main Content -->
+            <div class="container">
+
+                <div class="row">
+                    <!-- Widget Item -->
+                    <div class="col-md-12">
+                        <div class="widget-area-2 lochana-box-shadow">
+                            <!-- <h3 class="widget-title">筛选条件</h3> -->
+                            <div class="table-responsive mb-3">
+
+                                <table id="users_table" class="table table-bordered table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th class="no-sort">
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="select-all">
+                                                    <label class="custom-control-label" for="select-all"></label>
+                                                </div>
+                                            </th>
+                                            <th>教师编号</th>
+                                            <th>教师姓名</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% if users_info %}
+                                        {% for item in users_info %}
+                                        <tr>
+                                            <td>
+                                                <div class="custom-control custom-checkbox">
+                                                    <input class="custom-control-input" type="checkbox" id="{{item[0]}}">
+                                                    <label class="custom-control-label" for="{{item[0]}}"></label>
+                                                </div>
+                                            </td>
+                                            <td>{{item[0]}}</td>
+                                            <td>{{item[1]}}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% endif %}
+                                    </tbody>
+                                </table>
+                                <!-- Modal Popup-->
+                                    <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                                        <div class="modal-dialog modal-dialog-centered" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="exampleModalCenterTitle">重置密码</h5>
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <div class="row">
+                                                        <div class="form-group col-md-3"></div>
+                                                        <div class="form-group col-md-6">
+                                                            <label for="password_reset">重置密码</label>
+                                                            <input type="password" class="form-control" id="password_reset">
+                                                        </div>
+                                                        <div class="form-group col-md-3"></div>
+
+                                                        <div class="form-group col-md-3"></div>
+                                                        <div class="form-group col-md-6">
+                                                            <label for="password_reset_confirm">确认重置密码</label>
+                                                            <input type="password" class="form-control" id="password_reset_confirm">
+                                                        </div>
+                                                        <div class="form-group col-md-3"></div>
+                                                    </div>
+                                                    <div id="result"></div>
+                                                </div>
+
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-primary" id="submit_reset_password">提交</button>
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">关闭</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- /.col-sm-9 -->
+                                    </div>
+                                <!-- /Modal Popup-->
+
+                                <button type="button" id="reset_password" class="btn btn-primary mt-3 mb-0" data-toggle="modal" data-target="#exampleModalCenter"><span class="ti-pencil-alt"></span> 重置密码</button>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- /Widget Item -->
+                </div>
+            </div>
+            <!-- /Main Content -->
+        </div>
+        <!-- /Page Content -->
+    </div>
+    <!-- Back to Top -->
+    <a id="back-to-top" href="#" class="back-to-top">
+        <span class="ti-angle-up"></span>
+    </a>
+    <!-- /Back to Top -->
+    <!-- Jquery Library-->
+    <script src="/static/js/jquery-3.2.1.min.js"></script>
+    <!-- Popper Library-->
+    <script src="/static/js/popper.min.js"></script>
+    <!-- Bootstrap Library-->
+    <script src="/static/js/bootstrap.min.js"></script>
+
+    <!-- Datatable  -->
+    <script src="/static/datatable/jquery.dataTables.min.js"></script>
+    <script src="/static/datatable/dataTables.bootstrap4.min.js"></script>
+
+    <!-- Custom Script-->
+    <script src="/static/js/custom.js"></script>
+    <script src="/static/js/custom-datatables.js"></script>
+    <script src="/static/js/tool.js"></script>
+    <script src="/static/js/reset.js"></script>
+</body>
+
+</html>

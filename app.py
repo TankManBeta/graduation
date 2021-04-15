@@ -36,11 +36,16 @@ app.config["SECRET_KEY"] = "123456"
 login_manager.init_app(app)
 
 
-# 根据models里面的模型创建数据库表
+# 根据models里面的模型创建数据库表并生成管理员账号
 # @app.before_first_request
 # def create_tables():
 #     db.drop_all()
 #     db.create_all()
+#     admin1 = User("", "管理员1", "123456")
+#     db.session.add(admin1)
+#     db.session.commit()
+#     admin1.user_id = "admin1"
+#     db.session.commit()
 
 
 @login_manager.user_loader
@@ -64,11 +69,39 @@ def login():
         # 登陆成功
         if user and user.check_password(password):
             login_user(user)
-            return redirect(url_for("index"))
+            if user.user_id.startswith("admin"):
+                return redirect(url_for("admin_index"))
+            else:
+                return redirect(url_for("index"))
         # 登录失败
         else:
             msg = "用户名或密码错误"
             return render_template("login.html", msg=msg)
+
+
+@app.route("/manage", methods=["GET", "POST"])
+@login_required
+def admin_index():
+    if request.method == "GET":
+        users_info = db.session.query(User).filter().with_entities(User.user_id, User.user_name).all()
+        users_info_after = []
+        for item in users_info:
+            if not item[0].startswith("admin"):
+                users_info_after.append(item)
+        return render_template("management.html", users_info=users_info_after)
+    if request.method == "POST":
+        users_data = request.get_json()
+        users_list = users_data["users_list"]
+        users_password = users_data["new_password"]
+        for item in users_list:
+            if item == "select-all":
+                continue
+            else:
+                user_account_info = db.session.query(User).filter(User.user_id == item).first()
+                if user_account_info is not None:
+                    user_account_info.password = generate_password_hash(users_password)
+                    db.session.commit()
+        return "ok"
 
 
 @app.route('/logout')
@@ -336,9 +369,12 @@ def index():
             temp_list.append(temp_dict)
         temp_list.sort(key=lambda stu: stu["total"], reverse=True)
         # 前五个的详细信息
-        all_names = [temp_list[item]["name"] for item in range(1, 5)]
-        all_counts = [cooperate_dict[item] for item in all_names]
-        all_data = [{"name": all_names[i], "value": all_counts[i]} for i in range(0, 4)]
+        try:
+            all_names = [temp_list[item]["name"] for item in range(1, 5)]
+            all_counts = [cooperate_dict[item] for item in all_names]
+            all_data = [{"name": all_names[i], "value": all_counts[i]} for i in range(0, 4)]
+        except IndexError:
+            all_data = []
         return render_template("index.html", patent_data=patent_data, project_data=project_data,
                                paper_data=paper_data, preview=preview, increment=increment, all_data=all_data)
 

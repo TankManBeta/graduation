@@ -15,6 +15,7 @@ $("#select-all").click(function () {
 
 $('#exampleModalCenter').on('hidden.bs.modal', function (){
     $("input[type='password']").val('');
+    $("#result").html("")
 });
 
 $("#submit_reset_password").click(function () {

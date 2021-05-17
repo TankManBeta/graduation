@@ -125,6 +125,7 @@ class PatentCrawler:
         options.add_argument('--headless')
         options.add_argument('--disable-gpu')
         browser = webdriver.Chrome(self.executable_path, options=options)
+        # browser = webdriver.Chrome(self.executable_path)
         try:
             browser.get(self.patent_url)
         except:
@@ -135,14 +136,14 @@ class PatentCrawler:
         time.sleep(2)
         # 设置第一个检索条件
         browser.find_element_by_xpath('//*[@id="patentgradetxt"]/dd[1]/div[2]/div[1]/div[1]').click()
-        browser.find_element_by_xpath('//*[@id="patentgradetxt"]/dd[1]/div[2]/div[1]/div[2]/ul/li[11]').click()
+        browser.find_element_by_xpath('//*[@id="patentgradetxt"]/dd[1]/div[2]/div[1]/div[2]/ul/li[12]').click()
         time.sleep(1)
         browser.find_element_by_xpath('//*[@id="patentgradetxt"]/dd[1]/div[2]/input').send_keys(self.name)
         browser.find_element_by_xpath('//*[@id="patentgradetxt"]/dd[3]/a').click()
         time.sleep(2)
         # 设置第二个检索条件
         browser.find_element_by_xpath('//*[@id="patentgradetxt"]/dd[2]/div[2]/div[1]/div[1]').click()
-        browser.find_element_by_xpath('//*[@id="patentgradetxt"]/dd[2]/div[2]/div[1]/div[2]/ul/li[10]').click()
+        browser.find_element_by_xpath('//*[@id="patentgradetxt"]/dd[2]/div[2]/div[1]/div[2]/ul/li[11]').click()
         time.sleep(1)
         browser.find_element_by_xpath('//*[@id="patentgradetxt"]/dd[2]/div[2]/input').send_keys(self.address)
         time.sleep(2)
@@ -221,6 +222,9 @@ class ProjectCrawler:
         options.add_argument('--disable-gpu')
         browser = webdriver.Chrome(self.executable_path, options=options)
         browser_detail = webdriver.Chrome(self.executable_path, options=options)
+        # 测试时有浏览器
+        # browser = webdriver.Chrome(self.executable_path)
+        # browser_detail = webdriver.Chrome(self.executable_path)
         try:
             browser.get(self.project_url)
         except:
@@ -244,7 +248,7 @@ class ProjectCrawler:
                     # 构造点击的xpath
                     my_xpath = '//*[@id="listDiv"]/div[{}]/div[1]/div/a/span'.format(3*i+1)
                     browser.find_element_by_xpath(my_xpath).click()
-                    time.sleep(2)
+                    time.sleep(5)
                     # 切换到新打开的标签页
                     windows = browser.window_handles
                     browser.switch_to.window(windows[1])
@@ -258,7 +262,7 @@ class ProjectCrawler:
                     browser_detail.get(self.project_detail_url)
                     browser_detail.find_element_by_xpath('//*[@id="prjno"]').send_keys(project_id)
                     browser_detail.find_element_by_xpath('//*[@id="search_form"]/div[6]/button[1]').click()
-                    time.sleep(1)
+                    time.sleep(5)
                     project_principal = browser_detail.find_element_by_xpath\
                         ('//*[@id="data_view"]/tbody/tr[1]/td[1]').text
                     project_principal_title = browser_detail.find_element_by_xpath\
@@ -283,14 +287,14 @@ class ProjectCrawler:
                     print(project_data)
                     if project_data not in all_items:
                         all_items.append(project_data)
-                    time.sleep(1)
+                    time.sleep(5)
                     browser.close()
                     # 返回原来的标签页
                     browser.switch_to.window(windows[0])
                 # 一页获取完成之后翻页
-                time.sleep(2)
+                time.sleep(5)
                 browser.find_element_by_xpath('//*[@id="pageNoUl"]/li[5]/a').click()
-                time.sleep(2)
+                time.sleep(5)
             except common.exceptions.NoSuchElementException:
                 break
         browser.quit()

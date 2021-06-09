@@ -1333,11 +1333,17 @@ def export_special():
 @app.route("/tool", methods=["GET", "POST"])
 def easy_tool():
     if request.method == "GET":
-        os.system(".\\package.exe")
-        return ""
+        response = make_response(send_from_directory(".", "package.exe", as_attachment=True))
+        response.headers['Content-Type'] = 'text/plain;charset=UTF-8'
+        return response
+        # os.system(".\\package.exe")
+        # return ""
     if request.method == "POST":
-        os.system(".\\package.exe")
-        return ""
+        response = make_response(send_from_directory(".", "package.exe", as_attachment=True))
+        response.headers['Content-Type'] = 'text/plain;charset=UTF-8'
+        return response
+        # os.system(".\\package.exe")
+        # return ""
 
 
 @app.route("/download/template/patent", methods=["GET", "POST"])

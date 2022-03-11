@@ -299,7 +299,7 @@ $("#export_all").click(function () {
             if (res){
                 let parse_data = new Blob([res]);
                 let download_url = window.URL.createObjectURL(parse_data);
-                let filename = xhr.getResponseHeader("filename");
+                let filename = decodeURIComponent(xhr.getResponseHeader("filename"));
                 let link = document.createElement('a');
                 link.href = download_url;
                 link.download = filename;

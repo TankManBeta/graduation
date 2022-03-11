@@ -5,16 +5,20 @@
     @Date 2021/2/25 13:45
 """
 
-import requests
-import json, time, re, jieba
-from selenium import webdriver, common
-from threading import Thread, Event
-import cv2
+import jieba
+import json
 import os
-from PIL import ImageGrab
-from tkinter import Tk, Menu, Text, END, messagebox
-from aip import AipOcr
+import re
+import time
 from ctypes import windll
+from threading import Thread, Event
+from tkinter import Tk, Menu, Text, END, messagebox
+
+import cv2
+import requests
+from PIL import ImageGrab
+from aip import AipOcr
+from selenium import webdriver, common
 
 
 # 论文信息爬虫
@@ -66,6 +70,7 @@ class PaperCrawler:
 
     def handler_paper_items(self, data):
         results = []
+        # 爬虫参数
         options = webdriver.ChromeOptions()
         options.add_argument('--headless')
         options.add_argument('--disable-gpu')
@@ -121,6 +126,7 @@ class PatentCrawler:
     def get_data(self):
         # 用来存放结果
         all_items = []
+        # 爬虫参数
         options = webdriver.ChromeOptions()
         options.add_argument('--headless')
         options.add_argument('--disable-gpu')
@@ -148,7 +154,7 @@ class PatentCrawler:
         browser.find_element_by_xpath('//*[@id="patentgradetxt"]/dd[2]/div[2]/input').send_keys(self.address)
         time.sleep(2)
         # 开始检索
-        browser.find_element_by_xpath('/html/body/div[4]/div/div[2]/div/div[1]/div[1]/div[2]/div[2]/input').click()
+        browser.find_element_by_xpath('/html/body/div[2]/div/div[2]/div/div[1]/div[1]/div[2]/div[2]/input').click()
         time.sleep(1)
         # 获取检索结果
         while True:
@@ -217,12 +223,13 @@ class ProjectCrawler:
 
     def get_data(self):
         all_items = []
+        # 设置webdriver的参数
         options = webdriver.ChromeOptions()
         options.add_argument('--headless')
         options.add_argument('--disable-gpu')
         browser = webdriver.Chrome(self.executable_path, options=options)
         browser_detail = webdriver.Chrome(self.executable_path, options=options)
-        # 测试时有浏览器
+        # 测试时有浏览器界面
         # browser = webdriver.Chrome(self.executable_path)
         # browser_detail = webdriver.Chrome(self.executable_path)
         try:
@@ -325,6 +332,7 @@ class MyTimer(Thread):
         self.finished.set()
 
 
+# 进行分词
 def split_words(para):
     candidate_generator = jieba.cut(para)
     candidate_list = list(candidate_generator)
@@ -334,7 +342,9 @@ def split_words(para):
 # 截图
 def cut():
     global img
+    # 截取整个屏幕
     screen_cut()
+    # 读取截图
     img = cv2.imread('screen.jpg')
     cv2.namedWindow('image')
     cv2.setMouseCallback('image', on_mouse)
@@ -375,6 +385,7 @@ def on_mouse(event, x, y, flags, param):
         # 不存在则新建目录
         if not os.path.exists(".\\photos"):
             os.makedirs('.\\photos')
+        # 保存图片的目录
         path = '.\\photos\\cut.png'
         new_text.delete(0.0, END)
         cv2.imwrite(path, cut_img)
@@ -410,10 +421,12 @@ user32 = windll.user32
 user32.SetProcessDPIAware()
 # 主窗体
 root = Tk()
+# 设置窗体名大小等
 root.wm_attributes('-topmost', 1)
 root.title("文字识别")
 root.geometry("300x100")
 root.resizable(width=False, height=False)
+# 新增菜单选项
 new_menu = Menu(root)
 new_menu.add_command(label="开始识别", command=cut)
 new_menu.add_command(label="复制到粘贴板", command=copy)
@@ -427,15 +440,15 @@ APP_ID = "23891095"
 APP_KEY = "fzTK5eStvxByKGRynEwO4DOZ"
 SECRET_KEY = "Y2XDUgYOO8iuhSei6lluFKRDIBQWmsfi"
 
-
-# if __name__ == "__main__":
-    # root.mainloop()
-    # patent_crawler = PatentCrawler("陈晓江", "西北大学")
-    # data2 = patent_crawler.get_data()
+# 测试入口
+if __name__ == "__main__":
+    patent_crawler = PatentCrawler("陈晓江", "西北大学")
+    data2 = patent_crawler.get_data()
     # paper_crawler = PaperCrawler("陈晓江", "西北大学")
     # data1 = paper_crawler.get_data()
     # paper_crawler.handler_paper_items(data1)
     # project_crawler = ProjectCrawler("陈晓江", "西北大学")
     # project_crawler.get_data()
+    # root.mainloop()
 
 

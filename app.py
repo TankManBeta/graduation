@@ -53,12 +53,14 @@ def load_user(user_id):
     return User.query.filter_by(user_id=user_id).first()
 
 
+# 处理登录的路由
 @app.route('/login', methods=["GET", "POST"])
 @app.route('/', methods=["GET", "POST"])
 def login():
     if request.method == "GET":
         return render_template("login.html")
     if request.method == "POST":
+        # 获取用户名和密码
         username = request.form.get("username")
         password = request.form.get("password")
         # 判断使用邮箱号还是账号登录
@@ -79,10 +81,12 @@ def login():
             return render_template("login.html", msg=msg)
 
 
+# 管理员管理用户的路由
 @app.route("/manage", methods=["GET", "POST"])
 @login_required
 def admin_index():
     if request.method == "GET":
+        # 展示所有的用户信息
         users_info = db.session.query(User).filter().with_entities(User.user_id, User.user_name).all()
         users_info_after = []
         for item in users_info:
@@ -90,6 +94,7 @@ def admin_index():
                 users_info_after.append(item)
         return render_template("management.html", users_info=users_info_after)
     if request.method == "POST":
+        # 获取需要重置密码的用户列表
         users_data = request.get_json()
         users_list = users_data["users_list"]
         users_password = users_data["new_password"]
@@ -99,11 +104,13 @@ def admin_index():
             else:
                 user_account_info = db.session.query(User).filter(User.user_id == item).first()
                 if user_account_info is not None:
+                    # 重置密码，进行加密
                     user_account_info.password = generate_password_hash(users_password)
                     db.session.commit()
         return "ok"
 
 
+# 登出的路由
 @app.route('/logout')
 @login_required
 def logout():
@@ -111,11 +118,13 @@ def logout():
     return redirect(url_for('login'))
 
 
+# 注册的路由
 @app.route('/register', methods=["GET", "POST"])
 def register():
     if request.method == "GET":
         return render_template("sign_up.html")
     if request.method == "POST":
+        # 获取注册相关的信息
         email = request.form.get("email")
         password = request.form.get("password")
         password_confirmation = request.form.get("password_confirmation")
@@ -173,6 +182,7 @@ def register():
                         # 注册成功之后系统自动开始爬取信息
                         if address2 == "":
                             address1 = split_words(address1)[0]
+                            # 多线程进行爬取
                             threads = [threading.Thread(target=get_papers, args=(name, address1, user.user_id, "no")),
                                        threading.Thread(target=get_patents, args=(name, address1, user.user_id, "no")),
                                        threading.Thread(target=get_projects, args=(name, address1, user.user_id, "no"))]
@@ -190,7 +200,7 @@ def register():
                         return render_template("sign_up.html", success=success)
 
 
-# 发送验证码
+# 发送验证码的路由
 @app.route("/captcha", methods=["GET", "POST"])
 def captcha():
     if request.method == "POST":
@@ -225,6 +235,7 @@ def captcha():
         return jsonify(data)
 
 
+# 首页的路由
 @app.route("/index", methods=["GET", "POST"])
 @login_required
 def index():
@@ -240,6 +251,7 @@ def index():
         # 构造需要返回的信息
         patent_data = [{"label": "已授权", "value": 0}, {"label": "已公开", "value": 0}, {"label": "已申请", "value": 0},
                        {"label": "已受理", "value": 0}, {"label": "已审核", "value": 0}]
+        # 按状态统计
         for patent in patents:
             temp_patent_count[patent[3].year] = temp_patent_count.get(patent[3].year, 0) + 1
             if patent[2] == "已授权":
@@ -379,6 +391,7 @@ def index():
                                paper_data=paper_data, preview=preview, increment=increment, all_data=all_data)
 
 
+# 查看详细信息的路由
 @app.route("/details", methods=["GET", "POST"])
 @login_required
 def details():
@@ -392,6 +405,7 @@ def details():
                                                                Patent.patent_inventors).all()
         return render_template("details_1.html", patent_data=patent_data)
     if request.method == "POST":
+        # 获取筛选的条件
         data = request.get_json()
         info_type = data["info_type"]
         info_state = data["info_state"]
@@ -493,6 +507,7 @@ def details():
                              + str(patent[0]) + '"></label></div></td><td>' + patent[1] + '</td><td>' + patent[2] + \
                              '</td><td>' + patent[3] + '</td><td>' + patent[4] + '</td><td>' + patent[-1] + '</td><td>' \
                              + patent[5].strftime('%Y-%m-%d') + '</td><td>'
+                # 根据专利状态构造html
                 if patent[6] == "已公开":
                     show_html += '<span class="badge badge-success">' + patent[6] + '</span></td>' + '</tr>'
                 if patent[6] == "已授权":
@@ -596,6 +611,7 @@ def details():
                              '</td><td>' + paper[3] + '</td><td>' + paper[-1] + "</td><td>" + \
                              paper[4].strftime('%Y-%m-%d') + '</td><td>' + paper[6] + '</td><td>' + str(paper[7]) \
                              + '</td><td>' + str(paper[8]) + '</td><td>' + paper[9] + '</td><td>'
+                # 根据论文状态构造html
                 if paper[12] == "已投递":
                     show_html += '<span class="badge badge-success">' + paper[12] + '</span></td>' + '</tr>'
                 if paper[12] == "已审核":
@@ -687,6 +703,7 @@ def details():
                              + str(project[0]) + '"></label></div></td><td>' + project[1] + '</td><td>' + project[2] + \
                              '</td><td>' + project[3] + '</td><td>' + project[4] + '</td><td>' + project[5] + \
                              '</td><td>' + project[6] + '</td><td>' + project[7].strftime('%Y-%m-%d') + '</td><td>'
+                # 根据项目状态构造html
                 if project[8] == "已申请":
                     show_html += '<span class="badge badge-warning">' + project[8] + '</span></td>' + '</tr>'
                 if project[8] == "已审核":
@@ -702,14 +719,17 @@ def details():
             return jsonify(table_data)
 
 
+# 删除专利的路由
 @app.route("/patent/delete", methods=["GET", "POST"])
 @login_required
 def delete_patent():
     if request.method == "POST":
         data = request.get_json()["delete_number"]
         for item in data:
+            # 全部删除
             if item == "select-all":
                 continue
+            # 删除部分
             else:
                 patent_info = db.session.query(Patent).filter(Patent.id == item).with_entities(Patent.patent_id,
                                                                                                Patent.patent_type).first()
@@ -722,13 +742,16 @@ def delete_patent():
         return ""
 
 
+# 删除论文的路由
 @app.route("/paper/delete", methods=["GET", "POST"])
 def delete_paper():
     if request.method == "POST":
         data = request.get_json()["delete_number"]
         for item in data:
+            # 删除所有
             if item == "select-all":
                 continue
+            # 删除部分
             else:
                 paper_info = db.session.query(Paper).filter(Paper.id == item).with_entities(Paper.paper_id).first()
                 if len(paper_info) != 0:
@@ -739,13 +762,16 @@ def delete_paper():
         return ""
 
 
+# 删除项目的路由
 @app.route("/project/delete", methods=["GET", "POST"])
 def delete_project():
     if request.method == "POST":
         data = request.get_json()["delete_number"]
         for item in data:
+            # 删除所有
             if item == "select-all":
                 continue
+            # 删除部分
             else:
                 project_info = db.session.query(Project).filter(Project.id == item).with_entities\
                     (Project.project_id).first()
@@ -757,6 +783,7 @@ def delete_project():
         return ""
 
 
+# 自动更新的路由
 @app.route("/update/auto", methods=["GET", "POST"])
 @login_required
 def update_auto():
@@ -764,30 +791,35 @@ def update_auto():
     if request.method == "GET":
         return render_template("auto_update.html")
     if request.method == "POST":
+        # 获取更新周期以及是否通知的选项
         data = request.get_json()
         # interval = int(data["interval"])*24*60*60
         interval = 10
         is_inform = data["is_inform"]
+        # 获取用户的相关信息用于爬虫爬取
         user_data = db.session.query(Info).filter(current_user.user_id == Info.user_id).with_entities(
             Info.name, Info.address1, Info.address2, Info.user_id).first()
         name = user_data[0]
         address1 = user_data[1]
         address1 = split_words(address1)[0]
         address2 = user_data[2]
+        # 通讯地址有多个
         if address2 != '':
             address2 = split_words(address2)[0]
-            timer1 = MyTimer(current_user.user_id, interval, update_info, (name, address1, user_data[3], is_inform))
-            timer2 = MyTimer(current_user.user_id, interval, update_info, (name, address2, user_data[3], is_inform))
+            # 自定义两个定时器定时爬取信息
+            timer1 = MyTimer(current_user.user_id, interval, update_info, (interval, name, address1, user_data[3], is_inform))
+            timer2 = MyTimer(current_user.user_id, interval, update_info, (interval, name, address2, user_data[3], is_inform))
             # 启动定时任务
             timer1.start()
             timer2.start()
         else:
-            timer1 = MyTimer(current_user.user_id, interval, update_info, (name, address1, user_data[3], is_inform))
+            timer1 = MyTimer(current_user.user_id, interval, update_info, (interval, name, address1, user_data[3], is_inform))
             # 启动定时任务
             timer1.start()
         return jsonify("success")
 
 
+# 手工更新的路由
 @app.route("/update/manual", methods=["GET", "POST"])
 @login_required
 def update_manual():
@@ -801,10 +833,12 @@ def update_manual():
         return render_template("details_3.html", patent_data=patent_data)
 
 
+# 修改某个专利的路由
 @app.route("/modify/patent/<patent_id>", methods=["GET", "POST"])
 @login_required
 def modify_patent(patent_id):
     if request.method == "GET":
+        # 展示所有的专利信息
         patent_info = db.session.query(Patent).filter(Patent.id == patent_id).with_entities(
             Patent.patent_id, Patent.patent_name, Patent.patent_type, Patent.patent_state, Patent.patent_time,
             Patent.patent_owner, Patent.patent_inventors).first()
@@ -812,6 +846,7 @@ def modify_patent(patent_id):
             teacher_apply_info = db.session.query(Apply).filter(Apply.patent_id == patent_info[0], Apply.teacher_id ==
                                                                 current_user.user_id, Apply.patent_type ==
                                                                 patent_info[2]).with_entities(Apply.teacher_type).first()
+            # 对筛选出来的信息进行处理用于前端展示
             data = {"patent_id": patent_info[0], "patent_name": patent_info[1], "patent_type": patent_info[2],
                     "patent_state": patent_info[3], "patent_time": patent_info[4].strftime('%Y-%m-%d'),
                     "patent_owner": patent_info[5], "inventor_rank": teacher_apply_info[0],
@@ -821,12 +856,14 @@ def modify_patent(patent_id):
                     "patent_owner": "", "inventor_rank": "", "patent_inventors": ""}
         return render_template("modify_patent.html", patent_data=data)
     if request.method == "POST":
+        # 获取更新的新信息
         data = request.get_json()
         print(data)
         patent_state = data["patent_state"]
         inventor_rank = data["inventor_rank"]
         patent_info = db.session.query(Patent).filter(Patent.id == patent_id).first()
         if patent_info is not None:
+            # 修改信息
             patent_info.patent_state = patent_state
             db.session.commit()
             patent_type = patent_info.patent_type
@@ -834,6 +871,7 @@ def modify_patent(patent_id):
             teacher_invent_info = db.session.query(Apply).filter(Apply.patent_id == real_patent_id, Apply.patent_type ==
                                                                  patent_type).first()
             teacher_invent_info.teacher_type = int(inventor_rank)
+            # 提交更新
             db.session.commit()
             msg = "yes"
         else:
@@ -841,10 +879,12 @@ def modify_patent(patent_id):
         return jsonify(msg)
 
 
+# 修改某篇论文的路由
 @app.route("/modify/paper/<paper_id>", methods=["GET", "POST"])
 @login_required
 def modify_paper(paper_id):
     if request.method == "GET":
+        # 展示所有的论文信息
         paper_info = db.session.query(Paper).filter(Paper.id == paper_id).with_entities(
             Paper.paper_id, Paper.paper_name, Paper.paper_source, Paper.paper_region, Paper.paper_time,
             Paper.paper_state, Paper.paper_keywords, Paper.paper_quote, Paper.paper_influence, Paper.paper_search_type,
@@ -852,6 +892,7 @@ def modify_paper(paper_id):
         if len(paper_info) != 0:
             author_rank = db.session.query(Deliver).filter(Deliver.paper_id == paper_info[0], Deliver.teacher_id ==
                                                            current_user.user_id).with_entities(Deliver.teacher_type).first()
+            # 对筛选出来的信息进行处理
             data = {
                 "paper_id": paper_info[0], "paper_name": paper_info[1], "paper_source": paper_info[2],
                 "paper_region": paper_info[3], "paper_time": paper_info[4], "paper_state": paper_info[5],
@@ -860,6 +901,7 @@ def modify_paper(paper_id):
                 "paper_authors": paper_info[-1]
             }
         else:
+            # 信息为空
             data = {
                 "paper_id": "", "paper_name": "", "paper_source": "", "paper_region": "", "paper_time": "",
                 "paper_state": "", "paper_keywords": "", "paper_quote": "", "paper_influence": "",
@@ -883,6 +925,7 @@ def modify_paper(paper_id):
             try:
                 author_rank_info = db.session.query(Deliver).filter(Deliver.paper_id == paper_info.paper_id,
                                                                     Deliver.teacher_id == current_user.user_id).first()
+                # 对信息进行更新
                 paper_info.paper_state = paper_state
                 paper_info.paper_quote = paper_quote
                 paper_info.paper_influence = paper_influence
@@ -890,6 +933,7 @@ def modify_paper(paper_id):
                 paper_info.paper_press = paper_press
                 paper_info.paper_doi = paper_doi
                 author_rank_info.teacher_type = int(author_rank)
+                # 提交信息
                 db.session.commit()
                 msg = "yes"
             except:
@@ -899,10 +943,12 @@ def modify_paper(paper_id):
         return jsonify(msg)
 
 
+# 修改某个项目信息
 @app.route("/modify/project/<project_id>", methods=["GET", "POST"])
 @login_required
 def modify_project(project_id):
     if request.method == "GET":
+        # 筛选信息
         project_info = db.session.query(Project).filter(Project.id == project_id).with_entities(
             Project.project_id, Project.project_name, Project.project_source, Project.project_type,
             Project.project_time, Project.project_state, Project.project_principal, Project.project_principal_title
@@ -911,6 +957,7 @@ def modify_project(project_id):
             participator_rank = db.session.query(Participate).filter(
                 Participate.project_id == project_info[0], Participate.teacher_id == current_user.user_id).with_entities(
                 Participate.teacher_type).first()
+            # 对筛选出来的信息进行加工
             data = {
                 "project_id": project_info[0], "project_name": project_info[1], "project_source": project_info[2],
                 "project_type": project_info[3], "project_time": project_info[4], "project_state": project_info[5],
@@ -924,17 +971,20 @@ def modify_project(project_id):
             }
         return render_template("modify_project.html", project_data=data)
     if request.method == "POST":
+        # 获取新的项目信息
         data = request.get_json()
         project_state = data["project_state"]
         project_principal_title = data["project_principal_title"]
         participator_rank = data["participator_rank"]
         project_info = db.session.query(Project).filter(Project.id == project_id).first()
         if project_info is not None:
+            # 更新信息
             project_info.project_state = project_state
             project_info.project_principal_title = project_principal_title
             participator_info = db.session.query(Participate).filter(Participate.project_id == project_info.project_id,
                                                                      Participate.teacher_id == current_user.user_id).first()
             participator_info.teacher_type = int(participator_rank)
+            # 进行提交
             db.session.commit()
             msg = "yes"
         else:
@@ -942,12 +992,14 @@ def modify_project(project_id):
         return jsonify(msg)
 
 
+# 新增专利信息的路由
 @app.route("/add/patent", methods=["GET", "POST"])
 @login_required
 def add_patent():
     if request.method == "GET":
         return render_template("add_patent.html")
     if request.method == "POST":
+        # 获取新的专利所有信息
         data = request.get_json()
         print(data)
         patent_id = data["patent_id"]
@@ -966,11 +1018,15 @@ def add_patent():
             patent_in = db.session.query(Patent).filter(Patent.patent_id == patent_id, Patent.patent_type ==
                                                         patent_type).first()
             if patent_in is None:
+                # 新建一个Patent的对象
                 new_patent = Patent(patent_id, patent_name, patent_owner, parse(patent_time), patent_state, patent_type,
                                     patent_inventors)
+                # 提交对象
                 db.session.add(new_patent)
                 db.session.commit()
+                # 新建一个对应关系的对象
                 new_apply = Apply(current_user.user_id, patent_id, patent_type, int(inventor_rank))
+                # 提交对象
                 db.session.add(new_apply)
                 db.session.commit()
                 msg = "yes"
@@ -979,6 +1035,7 @@ def add_patent():
                                                                Apply.teacher_id == current_user.user_id,
                                                                Apply.patent_type == patent_type).first()
                 if apply_info_in is None:
+                    # 修改对应关系的表
                     all_inventors = patent_in.patent_inventors
                     is_in = True if current_user.user_name in all_inventors.split(';') else False
                     if not is_in:
@@ -993,12 +1050,14 @@ def add_patent():
         return jsonify(msg)
 
 
+# 新增论文信息的路由
 @app.route("/add/paper", methods=["GET", "POST"])
 @login_required
 def add_paper():
     if request.method == "GET":
         return render_template("add_paper.html")
     if request.method == "POST":
+        # 获取论文的相关信息
         data = request.get_json()
         print(data)
         paper_id = data["paper_id"]
@@ -1016,6 +1075,7 @@ def add_paper():
         paper_doi = data["paper_doi"]
         author_rank = data["author_rank"]
         paper_authors = data["paper_authors"]
+        # 对论文作者进行处理
         paper_authors = paper_authors.replace("；", ";").replace(" ", "")
         if paper_id.strip() == "" or paper_name.strip() == "" or paper_source.strip() == "" or paper_time.strip() == "" \
                 or paper_region.strip() == "" or paper_authors.strip() == "":
@@ -1025,17 +1085,23 @@ def add_paper():
                 paper_quote = int(paper_quote)
                 paper_influence = float(paper_influence)
                 paper_in = db.session.query(Paper).filter(Paper.paper_id == paper_id).first()
+                # 论文信息不存在，则条件一条论文信息，一条对应关系
                 if paper_in is None:
+                    # 新建Paper对象
                     new_paper = Paper(paper_id, paper_name, paper_source, parse(paper_time), paper_region,
                                       paper_keywords, paper_influence, paper_quote, paper_press, paper_search_type,
                                       paper_doi, paper_state, paper_authors)
+                    # 提交对象
                     db.session.add(new_paper)
                     db.session.commit()
+                    # 新建Deliver对象
                     new_deliver = Deliver(current_user.user_id, paper_id, int(author_rank))
+                    # 提交对象
                     db.session.add(new_deliver)
                     db.session.commit()
                     msg = "yes"
                 else:
+                    # 论文信息已存在，则至需要添加一条对应关系
                     deliver_info_in = db.session.query(Deliver).filter(Deliver.paper_id == paper_id,
                                                                        Deliver.teacher_id == current_user.user_id).first()
                     if deliver_info_in is None:
@@ -1050,12 +1116,14 @@ def add_paper():
         return jsonify(msg)
 
 
+# 新增项目信息的路由
 @app.route("/add/project", methods=["GET", "POST"])
 @login_required
 def add_project():
     if request.method == "GET":
         return render_template("add_project.html")
     if request.method == "POST":
+        # 获取项目的所有信息
         data = request.get_json()
         project_id = data["project_id"]
         project_name = data["project_name"]
@@ -1070,15 +1138,21 @@ def add_project():
             msg = "填写信息不完整"
         else:
             project_in = db.session.query(Project).filter(Project.project_id == project_id).first()
+            # 项目信息不存在，添加一条项目信息，一条对应信息
             if project_in is None:
+                # 新建Project对象
                 new_project = Project(project_id, project_name, project_type, project_source, project_state,
                                       project_principal, project_principal_title, parse(project_time))
+                # 提交对象
                 db.session.add(new_project)
                 db.session.commit()
+                # 新建Participate对象
                 new_participate = Participate(current_user.user_id, project_id, int(participator_rank))
+                # 提交对象
                 db.session.add(new_participate)
                 db.session.commit()
                 msg = "yes"
+            # 项目信息已存在，则添加一条对应关系
             else:
                 participate_in = db.session.query(Participate).filter(Participate.project_id == project_id,
                                                                       Participate.teacher_id == current_user.user_id).first()
@@ -1092,10 +1166,12 @@ def add_project():
         return msg
 
 
+# 修改个人信息的路由
 @app.route("/modify/info", methods=["GET", "POST"])
 @login_required
 def modify_info():
     if request.method == "GET":
+        # 获取用户的个人信息
         user_info = db.session.query(Info).filter(Info.user_id == current_user.user_id).first()
         user_id = user_info.user_id
         user_email = user_info.email
@@ -1109,6 +1185,7 @@ def modify_info():
         district2 = user_info.district2
         address2 = user_info.address2
         user_title = user_info.title
+        # 构造字典，用于信息回填
         user_data = {
             "user_id": user_id,
             "user_email": user_email,
@@ -1125,6 +1202,7 @@ def modify_info():
         }
         return render_template("modify_user.html", user_data=user_data)
     if request.method == "POST":
+        # 获取新的个人信息
         data = request.get_json()
         user_title = data["user_title"]
         province1 = data["province1"]
@@ -1152,6 +1230,7 @@ def modify_info():
                 district2 = ""
                 address2 = ""
                 msg = "通讯地址2不完整"
+            # 修改个人信息
             user_info = db.session.query(Info).filter(Info.user_id == current_user.user_id).first()
             user_info.title = user_title
             user_info.province1 = province1
@@ -1166,18 +1245,21 @@ def modify_info():
         return jsonify(msg)
 
 
+# 修改密码的路由
 @app.route("/modify/password", methods=["GET", "POST"])
 @login_required
 def modify_password():
     if request.method == "GET":
         return render_template("modify_password.html")
     if request.method == "POST":
+        # 获取新密码
         data = request.get_json()
         old_password = data["old_password"]
         new_password = data["new_password"]
         confirm_password = data["confirm_password"]
         print(data)
         old_password_info = db.session.query(User).filter(User.user_id == current_user.user_id).first()
+        # 对旧密码的正确性以及新密码的长度进行校验
         if old_password_info.check_password(old_password):
             if new_password == confirm_password and len(new_password) >= 6:
                 old_password_info.password = generate_password_hash(new_password)
@@ -1195,6 +1277,7 @@ def modify_password():
         return jsonify(msg)
 
 
+# 导出文件的路由
 @app.route("/export", methods=["GET", "POST"])
 @login_required
 def export_special():
@@ -1205,6 +1288,7 @@ def export_special():
                                                                Patent.patent_type, Patent.patent_owner,
                                                                Patent.patent_time, Patent.patent_state,
                                                                Patent.patent_inventors).all()
+        # 可选的信息头
         patent_headers = ["专利权人", "发明人", "专利号", "专利名称", "专利状态", "时间", "专利类型"]
         return render_template("special_export.html", patent_data=patent_data, patent_headers=patent_headers)
     if request.method == "POST":
@@ -1316,20 +1400,24 @@ def export_special():
         # 用时间戳给文件命名
         now_time = datetime.now().strftime("%Y-%m-%d-%H-%M-%S").replace('-', '')
         excel_name = current_user.user_name + '_' + now_time + '_'
+        # 判断是什么信息
         if data["export_type"] == 0:
             excel_name = excel_name + "专利信息.xlsx"
         elif data["export_type"] == 1:
             excel_name = excel_name + "论文信息.xlsx"
         else:
             excel_name = excel_name + "项目信息.xlsx"
+        # 保存并关闭文件
         new_excel.save(".\\files\\" + excel_name)
         new_excel.close()
+        # 文件传送到前端
         res = make_response(send_from_directory(".\\files", excel_name))
         res.headers['Content-Type'] = 'text/plain;charset=UTF-8'
         res.headers['filename'] = quote(excel_name.encode("utf-8"))
         return res
 
 
+# 文字识图工具的路由
 @app.route("/tool", methods=["GET", "POST"])
 def easy_tool():
     if request.method == "GET":
@@ -1346,11 +1434,13 @@ def easy_tool():
         # return ""
 
 
+# 下载专利信息的导入模板的路由
 @app.route("/download/template/patent", methods=["GET", "POST"])
 @login_required
 def download_patent_template():
     if request.method == "GET":
         try:
+            # 从文件夹发送文件
             response = make_response(send_from_directory(".\\import_templates", "专利信息导入模板.xlsx", as_attachment=True))
             response.headers['Content-Type'] = 'text/plain;charset=UTF-8'
             return response
@@ -1358,11 +1448,13 @@ def download_patent_template():
             return redirect(url_for("download_patent_template"))
 
 
+# 下载论文信息的导入模板
 @app.route("/download/template/paper", methods=["GET", "POST"])
 @login_required
 def download_paper_template():
     if request.method == "GET":
         try:
+            # 从文件夹发送文件
             response = make_response(send_from_directory(".\\import_templates", "论文信息导入模板.xlsx", as_attachment=True))
             response.headers['Content-Type'] = 'text/plain;charset=UTF-8'
             return response
@@ -1370,11 +1462,13 @@ def download_paper_template():
             return redirect(url_for("download_paper_template"))
 
 
+# 下载项目信息的导入模板
 @app.route("/download/template/project", methods=["GET", "POST"])
 @login_required
 def download_project_template():
     if request.method == "GET":
         try:
+            # 从文件夹发送
             response = make_response(send_from_directory(".\\import_templates", "项目信息导入模板.xlsx", as_attachment=True))
             response.headers['Content-Type'] = 'text/plain;charset=UTF-8'
             return response
@@ -1385,13 +1479,16 @@ def download_project_template():
 FILE_SAVE_PATH = ".\\import_files"
 
 
+# 文件批量导入专利信息的路由
 @app.route("/add/patents", methods=["GET", "POST"])
 @login_required
 def add_patents():
     if request.method == "POST":
-        file = request.files.get('file')  # 获取文件
+        # 获取文件
+        file = request.files.get('file')
         if file:
             filename = file.filename
+            # 判断文件类型为excel文件类型
             if filename.split('.')[-1] in ["xls", "xlsx"]:
                 # 用时间戳给文件命名
                 now_time = datetime.now().strftime("%Y-%m-%d-%H-%M-%S").replace('-', '')
@@ -1484,13 +1581,16 @@ def add_patents():
         return jsonify(msg)
 
 
+# 从文件批量导入论文信息的路由
 @app.route("/add/papers", methods=["GET", "POST"])
 @login_required
 def add_papers():
     if request.method == "POST":
-        file = request.files.get('file')  # 获取文件
+        # 获取文件
+        file = request.files.get('file')
         if file:
             filename = file.filename
+            # 判断文件类型为excel文件类型
             if filename.split('.')[-1] in ["xls", "xlsx"]:
                 # 用时间戳给文件命名
                 now_time = datetime.now().strftime("%Y-%m-%d-%H-%M-%S").replace('-', '')
@@ -1607,13 +1707,16 @@ def add_papers():
         return jsonify(msg)
 
 
+# 从文件批量导入项目信息的路由
 @app.route("/add/projects", methods=["GET", "POST"])
 @login_required
 def add_projects():
     if request.method == "POST":
-        file = request.files.get('file')  # 获取文件
+        # 获取文件
+        file = request.files.get('file')
         if file:
             filename = file.filename
+            # 判断文件类型为excel文件类型
             if filename.split('.')[-1] in ["xls", "xlsx"]:
                 # 用时间戳给文件命名
                 now_time = datetime.now().strftime("%Y-%m-%d-%H-%M-%S").replace('-', '')
@@ -1698,6 +1801,7 @@ def add_projects():
         return jsonify(msg)
 
 
+# 更新信息
 def update_info(interval, name, address, user_id, inform):
     global timer1
     print("我在定时执行")
@@ -1908,5 +2012,6 @@ def get_projects(name, address, user_id, inform):
     print("获取项目信息成功")
 
 
+# 程序入口
 if __name__ == '__main__':
     app.run()

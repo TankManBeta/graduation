@@ -8,7 +8,7 @@ from app import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 
-
+# 用户登录信息表
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     email = db.Column(db.String(128), nullable=False, unique=True)
@@ -43,6 +43,7 @@ class User(UserMixin, db.Model):
         return is_valid
 
 
+# 用户个人信息表
 class Info(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(128), nullable=False)
@@ -77,6 +78,7 @@ class Info(db.Model):
         return "<Info %r %r>" % (self.user_id, self.name)
 
 
+# 项目信息表
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     project_id = db.Column(db.String(128), nullable=False, unique=True)
@@ -103,6 +105,7 @@ class Project(db.Model):
         return "<Project %r %r>" % (self.project_id, self.project_name)
 
 
+# 论文信息表
 class Paper(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     paper_id = db.Column(db.String(128), nullable=False, unique=True)
@@ -139,6 +142,7 @@ class Paper(db.Model):
         return "<Paper %r %r>" % (self.paper_id, self.paper_name)
 
 
+# 专利信息表
 class Patent(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     patent_id = db.Column(db.String(128), nullable=False)
@@ -162,6 +166,7 @@ class Patent(db.Model):
         return "<Patent %r %r>" % (self.patent_id, self.patent_name)
 
 
+# 参与项目情况
 class Participate(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     teacher_id = db.Column(db.String(128), nullable=False)
@@ -177,6 +182,7 @@ class Participate(db.Model):
         return "<Participate %r %r>" % (self.teacher_id, self.project_id)
 
 
+# 发表论文情况
 class Deliver(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     teacher_id = db.Column(db.String(128), nullable=False)
@@ -192,6 +198,7 @@ class Deliver(db.Model):
         return "<Deliver %r %r>" % (self.teacher_id, self.paper_id)
 
 
+# 授权公开专利情况
 class Apply(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     teacher_id = db.Column(db.String(128), nullable=False)

@@ -442,13 +442,13 @@ SECRET_KEY = "Y2XDUgYOO8iuhSei6lluFKRDIBQWmsfi"
 
 # 测试入口
 if __name__ == "__main__":
-    patent_crawler = PatentCrawler("陈晓江", "西北大学")
-    data2 = patent_crawler.get_data()
+    # patent_crawler = PatentCrawler("陈晓江", "西北大学")
+    # data2 = patent_crawler.get_data()
     # paper_crawler = PaperCrawler("陈晓江", "西北大学")
     # data1 = paper_crawler.get_data()
     # paper_crawler.handler_paper_items(data1)
     # project_crawler = ProjectCrawler("陈晓江", "西北大学")
     # project_crawler.get_data()
-    # root.mainloop()
+    root.mainloop()
 
 
